@@ -1,0 +1,133 @@
+<div class="container">
+  <div class="page-header">
+    <h2>💳 Gerenciamento de Dívidas</h2>
+    <button class="btn btn-primary" (click)="showForm = !showForm">
+      {{ showForm ? 'Cancelar' : '+ Nova Dívida' }}
+    </button>
+  </div>
+
+  <div class="month-selector">
+    <button class="btn" (click)="changeMonth(-1)">← Mês Anterior</button>
+    <h3>{{ currentMonth }}/{{ currentYear }}</h3>
+    <button class="btn" (click)="changeMonth(1)">Mês Seguinte →</button>
+  </div>
+
+  <div *ngIf="report" class="card report-card">
+    <div class="report-grid">
+      <div class="report-item">
+        <h4>Total de Dívidas</h4>
+        <p class="report-value">{{ formatCurrency(report.totalDebts) }}</p>
+      </div>
+      <div class="report-item">
+        <h4>Total Pago</h4>
+        <p class="report-value success">{{ formatCurrency(report.totalPaid) }}</p>
+      </div>
+      <div class="report-item">
+        <h4>Total em Aberto</h4>
+        <p class="report-value warning">{{ formatCurrency(report.totalOpen) }}</p>
+      </div>
+      <div class="report-item">
+        <h4>% da Renda Comprometida</h4>
+        <p class="report-value">{{ report.percentageCommitted.toFixed(1) }}%</p>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="showForm" class="card">
+    <h3>Nova Dívida</h3>
+    <form [formGroup]="debtForm" (ngSubmit)="onSubmit()">
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Nome</label>
+          <input type="text" formControlName="name" placeholder="Ex: Conta de Luz"/>
+        </div>
+
+        <div class="form-group">
+          <label>Categoria</label>
+          <select formControlName="category">
+            <option *ngFor="let cat of categories" [value]="cat">
+              {{ getCategoryLabel(cat) }}
+            </option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Valor (R$)</label>
+          <input type="number" formControlName="amount" step="0.01" placeholder="150.00"/>
+        </div>
+
+        <div class="form-group">
+          <label>Tipo</label>
+          <select formControlName="type">
+            <option *ngFor="let type of types" [value]="type">
+              {{ getTypeLabel(type) }}
+            </option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Status</label>
+          <select formControlName="status">
+            <option *ngFor="let status of statuses" [value]="status">
+              {{ getStatusLabel(status) }}
+            </option>
+          </select>
+        </div>
+
+        <div class="form-group" *ngIf="debtForm.get('type')?.value === 'PARCELADA'">
+          <label>Número de Parcelas</label>
+          <input type="number" formControlName="totalInstallments" placeholder="12"/>
+        </div>
+
+        <div class="form-group" *ngIf="debtForm.get('type')?.value === 'FIXA'">
+          <label>
+            <input type="checkbox" formControlName="isFixedTemplate"/>
+            Replicar automaticamente para o restante do ano
+          </label>
+        </div>
+      </div>
+
+      <button type="submit" class="btn btn-primary" [disabled]="debtForm.invalid">
+        Criar Dívida
+      </button>
+    </form>
+  </div>
+
+  <div class="debts-list">
+    <div *ngIf="loading" class="loading">Carregando...</div>
+
+    <div *ngIf="!loading && debts.length === 0" class="empty-state">
+      <p>Nenhuma dívida cadastrada para este mês.</p>
+    </div>
+
+    <div *ngFor="let debt of debts" class="debt-card" [ngClass]="'status-' + debt.status.toLowerCase()">
+      <div class="debt-header">
+        <h4>{{ debt.name }}</h4>
+        <span class="debt-amount">{{ formatCurrency(debt.amount) }}</span>
+      </div>
+      <div class="debt-info">
+        <span class="badge">{{ getCategoryLabel(debt.category) }}</span>
+        <span class="badge">{{ getTypeLabel(debt.type) }}</span>
+        <span class="badge" [ngClass]="'badge-' + debt.status.toLowerCase()">
+          {{ getStatusLabel(debt.status) }}
+        </span>
+        <span *ngIf="debt.currentInstallment" class="badge">
+          Parcela {{ debt.currentInstallment }}/{{ debt.totalInstallments }}
+        </span>
+      </div>
+      <div class="debt-actions">
+        <button *ngIf="debt.status !== DebtStatus.PAGA" class="btn btn-sm btn-primary"
+                (click)="updateStatus(debt, DebtStatus.PAGA)">
+          Marcar como Paga
+        </button>
+        <button *ngIf="debt.status === DebtStatus.PAGA" class="btn btn-sm"
+                (click)="updateStatus(debt, DebtStatus.EM_ABERTO)">
+          Marcar como Em Aberto
+        </button>
+        <button class="btn btn-sm btn-danger" (click)="deleteDebt(debt)">
+          Excluir
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
