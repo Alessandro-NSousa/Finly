@@ -29,6 +29,8 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/finly_db
       SPRING_DATASOURCE_USERNAME: finly_user
       SPRING_DATASOURCE_PASSWORD: finly_pass
+      JWT_SECRET: ZmlubHlfc3VwZXJfc2VjcmV0X2tleV9jaGFuZ2VfaW5fcHJvZHVjdGlvbl8xMjM0NTY3ODk=
+      JWT_EXPIRATION: 86400000
     depends_on:
       postgres:
         condition: service_healthy
