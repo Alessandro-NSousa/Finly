@@ -1,6 +1,6 @@
 <div class="container">
   <div class="page-header">
-    <h2>📊 Dashboard Financeiro</h2>
+    <h2>Dashboard Financeiro</h2>
     <p *ngIf="user">Renda Mensal: {{ formatCurrency(user.monthlyIncome) }}</p>
   </div>
 
@@ -17,60 +17,51 @@
 
     <div class="stats-grid">
       <div class="stat-card">
-        <h4>💰 Saldo Disponível</h4>
+        <h4>Saldo Disponível</h4>
         <p class="stat-value" [ngClass]="{'negative': dashboard.availableBalance < 0}">
           {{ formatCurrency(dashboard.availableBalance) }}
         </p>
       </div>
 
       <div class="stat-card">
-        <h4>🏠 Despesas Fixas</h4>
+        <h4>Despesas Fixas</h4>
         <p class="stat-value">{{ formatCurrency(dashboard.currentFixedExpenses) }}</p>
         <small>{{ dashboard.fixedExpensesPercentage.toFixed(1) }}% (ideal: 50%)</small>
       </div>
 
       <div class="stat-card">
-        <h4>🛍️ Despesas Variáveis</h4>
+        <h4>Despesas Variáveis</h4>
         <p class="stat-value">{{ formatCurrency(dashboard.currentVariableExpenses) }}</p>
         <small>{{ dashboard.variableExpensesPercentage.toFixed(1) }}% (ideal: 30%)</small>
       </div>
 
       <div class="stat-card">
-        <h4>🐷 Poupança</h4>
+        <h4>Poupança</h4>
         <p class="stat-value">{{ formatCurrency(dashboard.currentSavings) }}</p>
         <small>{{ dashboard.savingsPercentage.toFixed(1) }}% (ideal: 20%)</small>
       </div>
     </div>
 
-    <div class="card">
-      <h3>📈 Regra 50/30/20 - Comparação</h3>
-      <div class="comparison-grid">
-        <div class="comparison-item">
-          <h5>Você</h5>
-          <div class="progress-bar">
-            <div class="progress-segment fixed" [style.width.%]="dashboard.fixedExpensesPercentage"></div>
-            <div class="progress-segment variable" [style.width.%]="dashboard.variableExpensesPercentage"></div>
-            <div class="progress-segment savings" [style.width.%]="dashboard.savingsPercentage"></div>
-          </div>
-          <p>
-            <span class="legend fixed">{{ dashboard.fixedExpensesPercentage.toFixed(1) }}%</span>
-            <span class="legend variable">{{ dashboard.variableExpensesPercentage.toFixed(1) }}%</span>
-            <span class="legend savings">{{ dashboard.savingsPercentage.toFixed(1) }}%</span>
-          </p>
+    <div class="charts-grid">
+      <div class="card chart-card">
+        <h3>Distribuição de Gastos</h3>
+        <div class="chart-wrapper">
+          <canvas baseChart
+            [data]="expenseChartData"
+            [type]="'doughnut'"
+            [options]="expenseChartOptions">
+          </canvas>
         </div>
+      </div>
 
-        <div class="comparison-item">
-          <h5>Recomendado</h5>
-          <div class="progress-bar">
-            <div class="progress-segment fixed" style="width: 50%"></div>
-            <div class="progress-segment variable" style="width: 30%"></div>
-            <div class="progress-segment savings" style="width: 20%"></div>
-          </div>
-          <p>
-            <span class="legend fixed">50%</span>
-            <span class="legend variable">30%</span>
-            <span class="legend savings">20%</span>
-          </p>
+      <div class="card chart-card">
+        <h3>Regra 50/30/20 - Atual vs. Ideal</h3>
+        <div class="chart-wrapper">
+          <canvas baseChart
+            [data]="comparisonChartData"
+            [type]="'bar'"
+            [options]="comparisonChartOptions">
+          </canvas>
         </div>
       </div>
     </div>
