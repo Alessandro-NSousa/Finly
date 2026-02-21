@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 
 @Component({
@@ -20,32 +20,25 @@ export class RegisterComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    if (this.authService.isAuthenticated()) {
-      this.router.navigate(['/dashboard']);
-    }
-
     this.registerForm = this.fb.group({
       name: ['', [Validators.required]],
       email: ['', [Validators.required, Validators.email]],
       password: ['', [Validators.required, Validators.minLength(6)]],
-      monthlyIncome: ['', [Validators.required, Validators.min(0)]]
+      monthlyIncome: ['', [Validators.required, Validators.min(0.01)]]
     });
   }
 
   onSubmit(): void {
-    if (this.registerForm.invalid) {
-      return;
-    }
+    if (this.registerForm.invalid) return;
 
     this.loading = true;
     this.errorMessage = '';
 
-    this.authService.register(this.registerForm.value).subscribe({
-      next: () => {
-        this.router.navigate(['/dashboard']);
-      },
-      error: (error) => {
-        this.errorMessage = 'Erro ao criar conta. Email pode já estar em uso.';
+    const { name, email, password, monthlyIncome } = this.registerForm.value;
+    this.authService.register(name, email, password, monthlyIncome).subscribe({
+      next: () => this.router.navigate(['/dashboard']),
+      error: (err) => {
+        this.errorMessage = err.error?.message || 'Erro ao criar conta. Tente novamente.';
         this.loading = false;
       }
     });

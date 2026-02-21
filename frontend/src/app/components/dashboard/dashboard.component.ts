@@ -92,10 +92,9 @@ export class DashboardComponent implements OnInit {
 
   loadData(): void {
     this.loading = true;
+
     this.userService.getCurrentUser().subscribe({
-      next: (user) => {
-        this.user = user;
-      }
+      next: (user) => { this.user = user; }
     });
 
     this.dashboardService.getFinancialDashboard().subscribe({
