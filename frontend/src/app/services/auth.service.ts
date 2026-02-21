@@ -1,65 +1,35 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { Observable, BehaviorSubject, tap } from 'rxjs';
-import { Router } from '@angular/router';
-import { AuthResponse, LoginRequest, RegisterRequest } from '../models/user.model';
-import { environment } from '../../environments/environment';
+import { AuthService as Auth0Service } from '@auth0/auth0-angular';
+import { Observable } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
-  private apiUrl = `${environment.apiUrl}/auth`;
-  private tokenSubject = new BehaviorSubject<string | null>(this.getToken());
-  public token$ = this.tokenSubject.asObservable();
+  constructor(private auth0: Auth0Service) {}
 
-  constructor(
-    private http: HttpClient,
-    private router: Router
-  ) {}
-
-  register(request: RegisterRequest): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>(`${this.apiUrl}/register`, request).pipe(
-      tap(response => this.handleAuthResponse(response))
-    );
+  /** Redirect to Auth0 Universal Login */
+  login(): void {
+    this.auth0.loginWithRedirect();
   }
 
-  login(request: LoginRequest): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>(`${this.apiUrl}/login`, request).pipe(
-      tap(response => this.handleAuthResponse(response))
-    );
+  /** Redirect to Auth0 Universal Login with signup screen */
+  loginWithSignup(): void {
+    this.auth0.loginWithRedirect({
+      authorizationParams: { screen_hint: 'signup' }
+    });
   }
 
+  /** Log out and redirect back to /login */
   logout(): void {
-    localStorage.removeItem('token');
-    localStorage.removeItem('userId');
-    localStorage.removeItem('userName');
-    localStorage.removeItem('userEmail');
-    this.tokenSubject.next(null);
-    this.router.navigate(['/login']);
+    this.auth0.logout({ logoutParams: { returnTo: window.location.origin + '/login' } });
   }
 
-  isAuthenticated(): boolean {
-    return !!this.getToken();
+  get isAuthenticated$(): Observable<boolean> {
+    return this.auth0.isAuthenticated$;
   }
 
-  getToken(): string | null {
-    return localStorage.getItem('token');
-  }
-
-  getUserId(): string | null {
-    return localStorage.getItem('userId');
-  }
-
-  getUserName(): string | null {
-    return localStorage.getItem('userName');
-  }
-
-  private handleAuthResponse(response: AuthResponse): void {
-    localStorage.setItem('token', response.token);
-    localStorage.setItem('userId', response.userId.toString());
-    localStorage.setItem('userName', response.name);
-    localStorage.setItem('userEmail', response.email);
-    this.tokenSubject.next(response.token);
+  get user$() {
+    return this.auth0.user$;
   }
 }

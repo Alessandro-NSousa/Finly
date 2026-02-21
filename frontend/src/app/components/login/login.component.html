@@ -1,46 +1,19 @@
 <div class="auth-container">
   <div class="auth-card">
-    <h2>🔐 Login - Finly</h2>
+    <h2>Finly</h2>
     <p>Dê um fim no descontrole financeiro</p>
 
-    <div *ngIf="errorMessage" class="alert alert-danger">
-      {{ errorMessage }}
+    <button class="btn btn-primary btn-block" (click)="authService.login()">
+      Entrar
+    </button>
+
+    <div class="auth-footer">
+      <p>
+        Não tem uma conta?
+        <a href="#" (click)="authService.loginWithSignup(); $event.preventDefault()">
+          Cadastre-se
+        </a>
+      </p>
     </div>
-
-    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
-      <div class="form-group">
-        <label for="email">Email</label>
-        <input
-          type="email"
-          id="email"
-          formControlName="email"
-          placeholder="seu@email.com"
-        />
-        <div *ngIf="loginForm.get('email')?.invalid && loginForm.get('email')?.touched" class="error-text">
-          Email inválido
-        </div>
-      </div>
-
-      <div class="form-group">
-        <label for="password">Senha</label>
-        <input
-          type="password"
-          id="password"
-          formControlName="password"
-          placeholder="Sua senha"
-        />
-        <div *ngIf="loginForm.get('password')?.invalid && loginForm.get('password')?.touched" class="error-text">
-          Senha deve ter no mínimo 6 caracteres
-        </div>
-      </div>
-
-      <button type="submit" class="btn btn-primary btn-block" [disabled]="loading || loginForm.invalid">
-        {{ loading ? 'Entrando...' : 'Entrar' }}
-      </button>
-
-      <div class="auth-footer">
-        <p>Não tem uma conta? <a routerLink="/register">Cadastre-se</a></p>
-      </div>
-    </form>
   </div>
 </div>
