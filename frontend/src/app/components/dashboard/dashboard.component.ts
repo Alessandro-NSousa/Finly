@@ -1,5 +1,4 @@
 import { Component, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
 import { ChartData, ChartOptions } from 'chart.js';
 import { DashboardService } from '../../services/dashboard.service';
 import { UserService } from '../../services/user.service';
@@ -84,8 +83,7 @@ export class DashboardComponent implements OnInit {
 
   constructor(
     private dashboardService: DashboardService,
-    private userService: UserService,
-    private router: Router
+    private userService: UserService
   ) {}
 
   ngOnInit(): void {
@@ -94,14 +92,9 @@ export class DashboardComponent implements OnInit {
 
   loadData(): void {
     this.loading = true;
+
     this.userService.getCurrentUser().subscribe({
-      next: (user) => {
-        if (!user.monthlyIncome || user.monthlyIncome === 0) {
-          this.router.navigate(['/register']);
-          return;
-        }
-        this.user = user;
-      }
+      next: (user) => { this.user = user; }
     });
 
     this.dashboardService.getFinancialDashboard().subscribe({

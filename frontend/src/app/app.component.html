@@ -1,4 +1,4 @@
-<div class="app-wrapper" *ngIf="authService.isAuthenticated$ | async">
+<div class="app-wrapper" *ngIf="authService.isAuthenticated()">
   <nav class="navbar">
     <div class="container">
       <div class="nav-brand">
@@ -7,7 +7,7 @@
       <div class="nav-menu">
         <a routerLink="/dashboard" routerLinkActive="active">Dashboard</a>
         <a routerLink="/debts" routerLinkActive="active">Dívidas</a>
-        <span class="user-info">{{ (authService.user$ | async)?.name || 'Usuário' }}</span>
+        <span class="user-info">{{ getUserName() }}</span>
         <button class="btn btn-danger" (click)="logout()">Sair</button>
       </div>
     </div>

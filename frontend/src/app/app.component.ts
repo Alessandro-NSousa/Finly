@@ -19,4 +19,7 @@ export class AppComponent {
     this.authService.logout();
   }
 
+  getUserName(): string {
+    return this.authService.getUserName() || 'Usuário';
+  }
 }

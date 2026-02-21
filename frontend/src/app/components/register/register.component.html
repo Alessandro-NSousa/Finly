@@ -1,13 +1,52 @@
 <div class="auth-container">
   <div class="auth-card">
-    <h2>Completar Perfil</h2>
-    <p>Informe sua renda mensal para começar</p>
+    <h2>Criar Conta</h2>
+    <p>Cadastre-se para começar</p>
 
     <div *ngIf="errorMessage" class="alert alert-danger">
       {{ errorMessage }}
     </div>
 
-    <form [formGroup]="setupForm" (ngSubmit)="onSubmit()">
+    <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
+      <div class="form-group">
+        <label for="name">Nome</label>
+        <input
+          type="text"
+          id="name"
+          formControlName="name"
+          placeholder="Seu nome"
+        />
+        <div *ngIf="registerForm.get('name')?.invalid && registerForm.get('name')?.touched" class="error-text">
+          Nome é obrigatório
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="email">Email</label>
+        <input
+          type="email"
+          id="email"
+          formControlName="email"
+          placeholder="seu@email.com"
+        />
+        <div *ngIf="registerForm.get('email')?.invalid && registerForm.get('email')?.touched" class="error-text">
+          Email inválido
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="password">Senha</label>
+        <input
+          type="password"
+          id="password"
+          formControlName="password"
+          placeholder="••••••"
+        />
+        <div *ngIf="registerForm.get('password')?.invalid && registerForm.get('password')?.touched" class="error-text">
+          Mínimo 6 caracteres
+        </div>
+      </div>
+
       <div class="form-group">
         <label for="monthlyIncome">Renda Mensal (R$)</label>
         <input
@@ -17,18 +56,18 @@
           placeholder="5000.00"
           step="0.01"
         />
-        <div *ngIf="setupForm.get('monthlyIncome')?.invalid && setupForm.get('monthlyIncome')?.touched" class="error-text">
+        <div *ngIf="registerForm.get('monthlyIncome')?.invalid && registerForm.get('monthlyIncome')?.touched" class="error-text">
           Informe um valor maior que zero
         </div>
       </div>
 
-      <button type="submit" class="btn btn-primary btn-block" [disabled]="loading || setupForm.invalid">
-        {{ loading ? 'Salvando...' : 'Começar' }}
+      <button type="submit" class="btn btn-primary btn-block" [disabled]="loading || registerForm.invalid">
+        {{ loading ? 'Criando conta...' : 'Criar Conta' }}
       </button>
     </form>
 
     <div class="auth-footer">
-      <p><a href="#" (click)="logout(); $event.preventDefault()">Sair</a></p>
+      <p>Já tem uma conta? <a routerLink="/login">Entrar</a></p>
     </div>
   </div>
 </div>
