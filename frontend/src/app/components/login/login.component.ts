@@ -23,7 +23,6 @@ export class LoginComponent implements OnInit {
     if (this.authService.isAuthenticated()) {
       this.router.navigate(['/dashboard']);
     }
-
     this.loginForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
       password: ['', [Validators.required, Validators.minLength(6)]]
@@ -31,19 +30,16 @@ export class LoginComponent implements OnInit {
   }
 
   onSubmit(): void {
-    if (this.loginForm.invalid) {
-      return;
-    }
+    if (this.loginForm.invalid) return;
 
     this.loading = true;
     this.errorMessage = '';
 
-    this.authService.login(this.loginForm.value).subscribe({
-      next: () => {
-        this.router.navigate(['/dashboard']);
-      },
-      error: (error) => {
-        this.errorMessage = 'Credenciais inválidas';
+    const { email, password } = this.loginForm.value;
+    this.authService.login(email, password).subscribe({
+      next: () => this.router.navigate(['/dashboard']),
+      error: () => {
+        this.errorMessage = 'Email ou senha inválidos.';
         this.loading = false;
       }
     });

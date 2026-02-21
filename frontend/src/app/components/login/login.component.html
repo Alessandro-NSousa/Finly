@@ -1,6 +1,6 @@
 <div class="auth-container">
   <div class="auth-card">
-    <h2>🔐 Login - Finly</h2>
+    <h2>Finly</h2>
     <p>Dê um fim no descontrole financeiro</p>
 
     <div *ngIf="errorMessage" class="alert alert-danger">
@@ -27,20 +27,20 @@
           type="password"
           id="password"
           formControlName="password"
-          placeholder="Sua senha"
+          placeholder="••••••"
         />
         <div *ngIf="loginForm.get('password')?.invalid && loginForm.get('password')?.touched" class="error-text">
-          Senha deve ter no mínimo 6 caracteres
+          Mínimo 6 caracteres
         </div>
       </div>
 
       <button type="submit" class="btn btn-primary btn-block" [disabled]="loading || loginForm.invalid">
         {{ loading ? 'Entrando...' : 'Entrar' }}
       </button>
-
-      <div class="auth-footer">
-        <p>Não tem uma conta? <a routerLink="/register">Cadastre-se</a></p>
-      </div>
     </form>
+
+    <div class="auth-footer">
+      <p>Não tem uma conta? <a routerLink="/register">Cadastre-se</a></p>
+    </div>
   </div>
 </div>
