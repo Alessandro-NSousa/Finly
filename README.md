@@ -23,7 +23,10 @@ O Finly é um sistema de controle de finanças pessoais que auxilia o usuário a
 
 ### Gestão de Usuários
 - ✅ Cadastro de usuários com renda mensal
+- ✅ Validação de email obrigatória
+- ✅ Ativação de conta por email
 - ✅ Autenticação JWT
+- ✅ Reenvio de email de ativação
 - ✅ Atualização de renda mensal
 
 ### Gestão de Dívidas
@@ -179,8 +182,10 @@ Após iniciar o backend, acesse a documentação Swagger:
 ### Principais Endpoints
 
 #### Autenticação
-- `POST /api/auth/register` - Registrar novo usuário
-- `POST /api/auth/login` - Fazer login
+- `POST /api/auth/register` - Registrar novo usuário (envia email de ativação)
+- `POST /api/auth/login` - Fazer login (requer conta ativada)
+- `GET /api/auth/activate?token={token}` - Ativar conta com token do email
+- `POST /api/auth/resend-verification` - Reenviar email de verificação
 
 #### Usuários
 - `GET /api/users/me` - Obter usuário atual
@@ -199,9 +204,13 @@ Após iniciar o backend, acesse a documentação Swagger:
 ## 💡 Uso
 
 ### 1. Criar Conta
-Acesse http://localhost:4200/register e crie uma nova conta informando:
-- Nome
-- Email
+Acesse  (válido e único)
+- Senha
+- Renda mensal
+
+Após o cadastro, você receberá um email com link de ativação. Clique no link para ativar sua conta e poder fazer login.
+
+**Observação**: O sistema requer ativação de conta por email. Certifique-se de configurar corretamente as variáveis de ambiente SMTP.
 - Senha
 - Renda mensal
 
@@ -224,7 +233,10 @@ Dívidas marcadas como "fixas" são automaticamente replicadas para os próximos
 
 ### 5. Dívidas Parceladas
 Ao criar uma dívida parcelada, o sistema gera automaticamente todas as parcelas distribuídas nos meses correspondentes.
-
+Ativação de conta obrigatória por email
+- Validação de email única e verificada
+- Tokens de ativação com expiração de 24 horas
+- 
 ## 🔐 Segurança
 
 - Autenticação JWT
@@ -240,11 +252,46 @@ O sistema utiliza a regra 50/30/20 para recomendações financeiras:
 - **30%** para despesas variáveis (lazer, etc.)
 - **20%** para poupança e investimentos
 
-## 📝 Variáveis de Ambiente
-
-### Backend (application.properties)
-```properties
+# Database
 spring.datasource.url=jdbc:postgresql://localhost:5432/finly_db
+spring.datasource.username=finly_user
+spring.datasource.password=finly_pass
+
+# JWT
+jwt.secret=your-secret-key
+jwt.expiration=86400000
+
+# Email (SMTP)
+spring.mail.host=smtp.gmail.com
+spring.mail.port=587
+spring.mail.username=seu_email@gmail.com
+spring.mail.password=sua_senha_de_aplicativo
+spring.mail.properties.mail.smtp.auth=true
+spring.mail.properties.mail.smtp.starttls.enable=true
+
+# Application URL (para links de ativação)
+app.base.url=http://localhost:4200
+```
+
+**Configuração de Email**: Para usar Gmail, você precisa gerar uma "Senha de App":
+1. Acesse https://myaccount.google.com/security
+2. Ative a verificação em duas etapas
+3. Gere uma senha de app em "Senhas de app"
+4. Use essa senha na variável `spring.mail.password`
+
+### Backend (.env)
+Alternativamente, você pode usar um arquivo `.env` na raiz do backend:
+```env
+SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/finly_db
+SPRING_DATASOURCE_USERNAME=finly_user
+SPRING_DATASOURCE_PASSWORD=finly_pass
+JWT_SECRET=your-secret-key
+JWT_EXPIRATION=86400000
+MAIL_HOST=smtp.gmail.com
+MAIL_PORT=587
+MAIL_USERNAME=seu_email@gmail.com
+MAIL_PASSWORD=sua_senha_de_aplicativo
+APP_BASE_URL=http://localhost:42=jdbc:postgresql://localhost:5432/finly_db
 spring.datasource.username=finly_user
 spring.datasource.password=finly_pass
 jwt.secret=your-secret-key

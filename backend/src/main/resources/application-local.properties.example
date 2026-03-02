@@ -9,3 +9,14 @@ spring.datasource.password=your_password_here
 # JWT Configuration
 jwt.secret=your_jwt_secret_in_base64
 jwt.expiration=86400000
+
+# Email Configuration
+spring.mail.host=smtp.gmail.com
+spring.mail.port=587
+spring.mail.username=your_email@gmail.com
+spring.mail.password=your_app_password_here
+spring.mail.properties.mail.smtp.auth=true
+spring.mail.properties.mail.smtp.starttls.enable=true
+
+# Application URL
+app.base.url=http://localhost:4200

@@ -11,7 +11,9 @@ import { AuthService } from '../../services/auth.service';
 export class RegisterComponent implements OnInit {
   registerForm!: FormGroup;
   errorMessage = '';
+  successMessage = '';
   loading = false;
+  registeredEmail = '';
 
   constructor(
     private fb: FormBuilder,
@@ -33,12 +35,37 @@ export class RegisterComponent implements OnInit {
 
     this.loading = true;
     this.errorMessage = '';
+    this.successMessage = '';
 
     const { name, email, password, monthlyIncome } = this.registerForm.value;
     this.authService.register(name, email, password, monthlyIncome).subscribe({
-      next: () => this.router.navigate(['/dashboard']),
+      next: (response) => {
+        this.successMessage = response.message;
+        this.registeredEmail = response.email;
+        this.loading = false;
+        this.registerForm.reset();
+      },
       error: (err) => {
         this.errorMessage = err.error?.message || 'Erro ao criar conta. Tente novamente.';
+        this.loading = false;
+      }
+    });
+  }
+
+  resendEmail(): void {
+    if (!this.registeredEmail) return;
+
+    this.loading = true;
+    this.errorMessage = '';
+    this.successMessage = '';
+
+    this.authService.resendVerificationEmail(this.registeredEmail).subscribe({
+      next: (response) => {
+        this.successMessage = response.message;
+        this.loading = false;
+      },
+      error: (err) => {
+        this.errorMessage = err.error?.message || 'Erro ao reenviar email.';
         this.loading = false;
       }
     });
