@@ -9,6 +9,7 @@ import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { LoginComponent } from './components/login/login.component';
 import { RegisterComponent } from './components/register/register.component';
+import { ActivateComponent } from './components/activate/activate.component';
 import { DashboardComponent } from './components/dashboard/dashboard.component';
 import { DebtsComponent } from './components/debts/debts.component';
 
@@ -17,6 +18,7 @@ import { DebtsComponent } from './components/debts/debts.component';
     AppComponent,
     LoginComponent,
     RegisterComponent,
+    ActivateComponent,
     DashboardComponent,
     DebtsComponent
   ],

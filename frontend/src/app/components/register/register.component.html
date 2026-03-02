@@ -7,7 +7,14 @@
       {{ errorMessage }}
     </div>
 
-    <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
+    <div *ngIf="successMessage" class="alert alert-success">
+      {{ successMessage }}
+      <div style="margin-top: 15px;">
+        <p>Não recebeu o email? <button type="button" class="btn-link" (click)="resendEmail()" [disabled]="loading">Reenviar</button></p>
+      </div>
+    </div>
+
+    <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" *ngIf="!successMessage">
       <div class="form-group">
         <label for="name">Nome</label>
         <input

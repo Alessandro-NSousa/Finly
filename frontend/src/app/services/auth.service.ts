@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { Observable, tap } from 'rxjs';
-import { AuthResponse, LoginRequest, RegisterRequest } from '../models/user.model';
+import { AuthResponse, LoginRequest, RegisterRequest, RegisterResponse } from '../models/user.model';
 import { environment } from '../../environments/environment';
 
 @Injectable({
@@ -22,13 +22,16 @@ export class AuthService {
     );
   }
 
-  register(name: string, email: string, password: string, monthlyIncome: number): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>(`${this.apiUrl}/register`, { name, email, password, monthlyIncome } as RegisterRequest).pipe(
-      tap(res => {
-        localStorage.setItem('token', res.token);
-        localStorage.setItem('userName', res.name);
-      })
-    );
+  register(name: string, email: string, password: string, monthlyIncome: number): Observable<RegisterResponse> {
+    return this.http.post<RegisterResponse>(`${this.apiUrl}/register`, { name, email, password, monthlyIncome } as RegisterRequest);
+  }
+
+  activateAccount(token: string): Observable<{message: string}> {
+    return this.http.get<{message: string}>(`${this.apiUrl}/activate`, { params: { token } });
+  }
+
+  resendVerificationEmail(email: string): Observable<{message: string}> {
+    return this.http.post<{message: string}>(`${this.apiUrl}/resend-verification`, { email });
   }
 
   logout(): void {

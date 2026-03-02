@@ -34,6 +34,12 @@ public class User {
     @Column(name = "monthly_income", nullable = false)
     private BigDecimal monthlyIncome;
 
+    @Column(nullable = false)
+    private Boolean enabled = false;
+
+    @Column(name = "email_verified", nullable = false)
+    private Boolean emailVerified = false;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
