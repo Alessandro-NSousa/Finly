@@ -38,6 +38,22 @@ public class EmailService {
         sendEmail(to, subject, message);
     }
 
+    public void sendPasswordResetEmail(String to, String token) {
+        String subject = "Finly - Redefinição de senha";
+        String resetUrl = baseUrl + "/reset-password?token=" + token;
+
+        String message = "Olá!\n\n" +
+                "Recebemos uma solicitação para redefinir a senha da sua conta no Finly.\n\n" +
+                "Para criar uma nova senha, clique no link abaixo:\n" +
+                resetUrl + "\n\n" +
+                "Este link expira em 1 hora.\n\n" +
+                "Se você não solicitou a redefinição de senha, ignore este email. Sua senha permanece a mesma.\n\n" +
+                "Atenciosamente,\n" +
+                "Equipe Finly";
+
+        sendEmail(to, subject, message);
+    }
+
     public void sendEmail(String to, String subject, String text) {
         if (fromEmail == null || fromEmail.isEmpty()) {
             logger.error("Email não configurado. Configure MAIL_USERNAME nas variáveis de ambiente.");
