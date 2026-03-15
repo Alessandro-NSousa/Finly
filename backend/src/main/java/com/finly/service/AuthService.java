@@ -1,8 +1,10 @@
 package com.finly.service;
 
 import com.finly.dto.*;
+import com.finly.model.PasswordResetToken;
 import com.finly.model.User;
 import com.finly.model.VerificationToken;
+import com.finly.repository.PasswordResetTokenRepository;
 import com.finly.repository.UserRepository;
 import com.finly.repository.VerificationTokenRepository;
 import com.finly.security.JwtTokenProvider;
@@ -40,6 +42,9 @@ public class AuthService {
 
     @Autowired
     private VerificationTokenRepository verificationTokenRepository;
+
+    @Autowired
+    private PasswordResetTokenRepository passwordResetTokenRepository;
 
     @Autowired
     private EmailService emailService;
@@ -174,5 +179,58 @@ public class AuthService {
         }
 
         return "Email de verificação reenviado com sucesso!";
+    }
+
+    @Transactional
+    public String forgotPassword(String email) {
+        // Não revelamos se o email existe ou não por segurança
+        userRepository.findByEmail(email).ifPresent(user -> {
+            if (!user.getEnabled()) {
+                return;
+            }
+            // Invalida tokens anteriores
+            passwordResetTokenRepository.deleteActiveTokensByUserId(user.getId());
+
+            String token = UUID.randomUUID().toString();
+            PasswordResetToken resetToken = new PasswordResetToken();
+            resetToken.setToken(token);
+            resetToken.setUser(user);
+            resetToken.setExpiryDate(LocalDateTime.now().plusHours(1));
+            resetToken.setUsed(false);
+            passwordResetTokenRepository.save(resetToken);
+
+            try {
+                emailService.sendPasswordResetEmail(user.getEmail(), token);
+                logger.info("Email de redefinição de senha enviado para: {}", user.getEmail());
+            } catch (Exception e) {
+                logger.error("Erro ao enviar email de reset para {}: {}", user.getEmail(), e.getMessage());
+                throw new RuntimeException("Erro ao enviar email de redefinição. Tente novamente mais tarde.");
+            }
+        });
+        return "Se esse email estiver cadastrado, você receberá um link para redefinir sua senha.";
+    }
+
+    @Transactional
+    public String resetPassword(ResetPasswordRequest request) {
+        PasswordResetToken resetToken = passwordResetTokenRepository.findByToken(request.getToken())
+                .orElseThrow(() -> new RuntimeException("Token inválido ou expirado."));
+
+        if (resetToken.getUsed()) {
+            throw new RuntimeException("Este link já foi utilizado. Solicite um novo link.");
+        }
+
+        if (resetToken.isExpired()) {
+            throw new RuntimeException("Link expirado. Solicite um novo link de redefinição de senha.");
+        }
+
+        User user = resetToken.getUser();
+        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        userRepository.save(user);
+
+        resetToken.setUsed(true);
+        passwordResetTokenRepository.save(resetToken);
+
+        logger.info("Senha redefinida com sucesso para usuário ID: {}", user.getId());
+        return "Senha redefinida com sucesso! Você já pode fazer login.";
     }
 }

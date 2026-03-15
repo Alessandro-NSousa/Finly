@@ -1,9 +1,11 @@
 package com.finly.controller;
 
 import com.finly.dto.AuthResponse;
+import com.finly.dto.ForgotPasswordRequest;
 import com.finly.dto.LoginRequest;
 import com.finly.dto.RegisterRequest;
 import com.finly.dto.RegisterResponse;
+import com.finly.dto.ResetPasswordRequest;
 import com.finly.service.AuthService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -49,6 +51,20 @@ public class AuthController {
     public ResponseEntity<Map<String, String>> resendVerificationEmail(@RequestBody Map<String, String> request) {
         String email = request.get("email");
         String message = authService.resendVerificationEmail(email);
+        return ResponseEntity.ok(Map.of("message", message));
+    }
+
+    @PostMapping("/forgot-password")
+    @Operation(summary = "Solicitar redefinição de senha", description = "Envia um email com link para redefinir a senha")
+    public ResponseEntity<Map<String, String>> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
+        String message = authService.forgotPassword(request.getEmail());
+        return ResponseEntity.ok(Map.of("message", message));
+    }
+
+    @PostMapping("/reset-password")
+    @Operation(summary = "Redefinir senha", description = "Redefine a senha do usuário através do token recebido por email")
+    public ResponseEntity<Map<String, String>> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
+        String message = authService.resetPassword(request);
         return ResponseEntity.ok(Map.of("message", message));
     }
 }
