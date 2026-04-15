@@ -30,29 +30,12 @@
         <h4>% da Renda Comprometida</h4>
         <p class="report-value">{{ report.percentageCommitted.toFixed(1) }}%</p>
       </div>
-    </div>
-  </div>
-
-  <div *ngIf="!loading && hasChartData()" class="charts-grid">
-    <div class="card chart-card">
-      <h3>Situação das Dívidas</h3>
-      <div class="chart-wrapper">
-        <canvas baseChart
-          [data]="statusChartData"
-          [type]="'doughnut'"
-          [options]="statusChartOptions">
-        </canvas>
-      </div>
-    </div>
-
-    <div class="card chart-card">
-      <h3>Gastos por Categoria</h3>
-      <div class="chart-wrapper">
-        <canvas baseChart
-          [data]="categoryChartData"
-          [type]="'bar'"
-          [options]="categoryChartOptions">
-        </canvas>
+      <div class="report-item">
+        <h4>Saldo Mensal</h4>
+        <p class="report-value" [ngClass]="{'success': (report.monthlyIncome - report.totalDebts) >= 0, 'danger': (report.monthlyIncome - report.totalDebts) < 0}">
+          {{ formatCurrency(report.monthlyIncome - report.totalDebts) }}
+        </p>
+        <small>Renda: {{ formatCurrency(report.monthlyIncome) }}</small>
       </div>
     </div>
   </div>
@@ -151,6 +134,30 @@
         <button class="btn btn-sm btn-danger" (click)="deleteDebt(debt)">
           Excluir
         </button>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="!loading && hasChartData()" class="charts-grid">
+    <div class="card chart-card">
+      <h3>Situação das Dívidas</h3>
+      <div class="chart-wrapper">
+        <canvas baseChart
+          [data]="statusChartData"
+          [type]="'doughnut'"
+          [options]="statusChartOptions">
+        </canvas>
+      </div>
+    </div>
+
+    <div class="card chart-card">
+      <h3>Gastos por Categoria</h3>
+      <div class="chart-wrapper">
+        <canvas baseChart
+          [data]="categoryChartData"
+          [type]="'bar'"
+          [options]="categoryChartOptions">
+        </canvas>
       </div>
     </div>
   </div>
