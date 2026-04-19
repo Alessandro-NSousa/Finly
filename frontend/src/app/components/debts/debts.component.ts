@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { HttpErrorResponse } from '@angular/common/http';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ChartData, ChartOptions } from 'chart.js';
 import { DebtService } from '../../services/debt.service';
@@ -126,12 +127,24 @@ export class DebtsComponent implements OnInit {
         this.debts = debts;
         this.loading = false;
         this.updateCharts(debts);
+      },
+      error: (error) => {
+        this.loading = false;
+
+        if (!this.isAuthError(error)) {
+          console.error('Erro ao carregar dívidas', error);
+        }
       }
     });
 
     this.debtService.getMonthlyReport(this.currentMonth, this.currentYear).subscribe({
       next: (report) => {
         this.report = report;
+      },
+      error: (error) => {
+        if (!this.isAuthError(error)) {
+          console.error('Erro ao carregar relatório mensal', error);
+        }
       }
     });
   }
@@ -188,6 +201,11 @@ export class DebtsComponent implements OnInit {
         this.showForm = false;
         this.debtForm.reset();
         this.initForm();
+      },
+      error: (error) => {
+        if (!this.isAuthError(error)) {
+          console.error('Erro ao criar dívida', error);
+        }
       }
     });
   }
@@ -196,6 +214,11 @@ export class DebtsComponent implements OnInit {
     this.debtService.updateDebtStatus(debt.id, status).subscribe({
       next: () => {
         this.loadDebts();
+      },
+      error: (error) => {
+        if (!this.isAuthError(error)) {
+          console.error('Erro ao atualizar status da dívida', error);
+        }
       }
     });
   }
@@ -205,9 +228,18 @@ export class DebtsComponent implements OnInit {
       this.debtService.deleteDebt(debt.id).subscribe({
         next: () => {
           this.loadDebts();
+        },
+        error: (error) => {
+          if (!this.isAuthError(error)) {
+            console.error('Erro ao excluir dívida', error);
+          }
         }
       });
     }
+  }
+
+  private isAuthError(error: unknown): boolean {
+    return error instanceof HttpErrorResponse && (error.status === 401 || error.status === 403);
   }
 
   changeMonth(delta: number): void {

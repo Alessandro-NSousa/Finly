@@ -1,4 +1,4 @@
-import { NgModule } from '@angular/core';
+import { APP_INITIALIZER, NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
@@ -14,6 +14,11 @@ import { DashboardComponent } from './components/dashboard/dashboard.component';
 import { DebtsComponent } from './components/debts/debts.component';
 import { ForgotPasswordComponent } from './components/forgot-password/forgot-password.component';
 import { ResetPasswordComponent } from './components/reset-password/reset-password.component';
+import { AuthService } from './services/auth.service';
+
+export function initializeAuthSession(authService: AuthService): () => Promise<void> {
+  return () => authService.initializeSession();
+}
 
 @NgModule({
   declarations: [
@@ -35,6 +40,12 @@ import { ResetPasswordComponent } from './components/reset-password/reset-passwo
     NgChartsModule
   ],
   providers: [
+    {
+      provide: APP_INITIALIZER,
+      useFactory: initializeAuthSession,
+      deps: [AuthService],
+      multi: true
+    },
     {
       provide: HTTP_INTERCEPTORS,
       useClass: AuthInterceptor,

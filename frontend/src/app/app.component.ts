@@ -1,5 +1,4 @@
 import { Component } from '@angular/core';
-import { Router } from '@angular/router';
 import { AuthService } from './services/auth.service';
 
 @Component({
@@ -10,10 +9,7 @@ import { AuthService } from './services/auth.service';
 export class AppComponent {
   title = 'Finly';
 
-  constructor(
-    public authService: AuthService,
-    private router: Router
-  ) {}
+  constructor(public authService: AuthService) {}
 
   logout(): void {
     this.authService.logout();
