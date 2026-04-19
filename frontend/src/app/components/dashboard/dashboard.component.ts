@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { HttpErrorResponse } from '@angular/common/http';
 import { ChartData, ChartOptions } from 'chart.js';
 import { DashboardService } from '../../services/dashboard.service';
 import { UserService } from '../../services/user.service';
@@ -94,7 +95,12 @@ export class DashboardComponent implements OnInit {
     this.loading = true;
 
     this.userService.getCurrentUser().subscribe({
-      next: (user) => { this.user = user; }
+      next: (user) => { this.user = user; },
+      error: (error) => {
+        if (!this.isAuthError(error)) {
+          console.error('Erro ao carregar dados do usuário', error);
+        }
+      }
     });
 
     this.dashboardService.getFinancialDashboard().subscribe({
@@ -104,10 +110,16 @@ export class DashboardComponent implements OnInit {
         this.updateCharts(dashboard);
       },
       error: (error) => {
-        console.error('Erro ao carregar dashboard', error);
+        if (!this.isAuthError(error)) {
+          console.error('Erro ao carregar dashboard', error);
+        }
         this.loading = false;
       }
     });
+  }
+
+  private isAuthError(error: unknown): boolean {
+    return error instanceof HttpErrorResponse && (error.status === 401 || error.status === 403);
   }
 
   private updateCharts(dashboard: FinancialDashboard): void {
