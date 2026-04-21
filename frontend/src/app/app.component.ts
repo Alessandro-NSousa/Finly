@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { AuthService } from './services/auth.service';
+import { ThemeService } from './services/theme.service';
 
 @Component({
   selector: 'app-root',
@@ -9,7 +10,10 @@ import { AuthService } from './services/auth.service';
 export class AppComponent {
   title = 'Finly';
 
-  constructor(public authService: AuthService) {}
+  constructor(
+    public authService: AuthService,
+    private themeService: ThemeService
+  ) {}
 
   logout(): void {
     this.authService.logout();
@@ -17,5 +21,21 @@ export class AppComponent {
 
   getUserName(): string {
     return this.authService.getUserName() || 'Usuário';
+  }
+
+  toggleTheme(): void {
+    this.themeService.toggleTheme();
+  }
+
+  isDarkTheme(): boolean {
+    return this.themeService.isDarkTheme();
+  }
+
+  getThemeLabel(): string {
+    return this.isDarkTheme() ? 'Escuro' : 'Claro';
+  }
+
+  getThemeActionLabel(): string {
+    return this.isDarkTheme() ? 'Ativar modo claro' : 'Ativar modo escuro';
   }
 }

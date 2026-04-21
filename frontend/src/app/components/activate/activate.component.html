@@ -1,27 +1,33 @@
 <div class="auth-container">
-  <div class="auth-card">
-    <h2>Ativação de Conta</h2>
+  <div class="auth-card auth-card--single">
+    <section class="auth-panel auth-panel--centered">
+      <span class="section-kicker">Validação</span>
+      <h2>Ativação de conta</h2>
+      <p>Estamos confirmando seu cadastro para liberar o painel financeiro e o acesso seguro à plataforma.</p>
 
-    <div *ngIf="loading" class="loading-container">
-      <div class="spinner"></div>
-      <p>Ativando sua conta...</p>
-    </div>
-
-    <div *ngIf="!loading && successMessage" class="alert alert-success">
-      {{ successMessage }}
-      <p style="margin-top: 15px;">Você será redirecionado para a página de login em instantes...</p>
-      <button type="button" class="btn btn-primary btn-block" (click)="goToLogin()">
-        Ir para Login
-      </button>
-    </div>
-
-    <div *ngIf="!loading && errorMessage" class="alert alert-danger">
-      {{ errorMessage }}
-      <div style="margin-top: 15px;">
-        <button type="button" class="btn btn-primary btn-block" (click)="goToLogin()">
-          Voltar para Login
-        </button>
+      <div *ngIf="loading" class="loading-container">
+        <div class="spinner"></div>
+        <p>Ativando sua conta...</p>
       </div>
-    </div>
+
+      <div *ngIf="!loading && successMessage" class="alert alert-success">
+        {{ successMessage }}
+        <p class="auth-note">Você será redirecionado para a página de login em instantes.</p>
+        <div class="auth-success-actions">
+          <button type="button" class="btn btn-primary btn-block" (click)="goToLogin()">
+            Ir para Login
+          </button>
+        </div>
+      </div>
+
+      <div *ngIf="!loading && errorMessage" class="alert alert-danger">
+        {{ errorMessage }}
+        <div class="auth-success-actions">
+          <button type="button" class="btn btn-primary btn-block" (click)="goToLogin()">
+            Voltar para Login
+          </button>
+        </div>
+      </div>
+    </section>
   </div>
 </div>

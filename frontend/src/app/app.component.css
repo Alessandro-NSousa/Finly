@@ -1,43 +1,213 @@
-.navbar {
-  background: white;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-  padding: 1rem 0;
-  margin-bottom: 2rem;
+.app-shell {
+  position: relative;
+  min-height: 100vh;
 }
 
-.navbar .container {
+.theme-toggle {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  min-width: 112px;
+  padding: 12px 14px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-lg);
+  background: var(--surface-strong);
+  box-shadow: var(--shadow-md);
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast), border-color var(--transition-fast);
+}
+
+.theme-toggle--inline {
+  box-shadow: none;
+}
+
+.theme-toggle--public {
+  margin-top: 20px;
+}
+
+.public-toolbar {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-end;
+}
+
+.theme-toggle:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-lg);
+  border-color: var(--primary);
+}
+
+.theme-toggle__meta {
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.theme-toggle__value {
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.navbar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  padding: 18px 0;
+  margin-bottom: 12px;
+  background: color-mix(in srgb, var(--surface-strong) 82%, transparent);
+  border-bottom: 1px solid var(--border-subtle);
+  backdrop-filter: blur(18px);
+}
+
+.navbar__inner {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 24px;
   align-items: center;
 }
 
-.nav-brand h1 {
+.nav-brand {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.brand-badge {
+  display: grid;
+  width: 44px;
+  height: 44px;
+  place-items: center;
+  border-radius: 16px;
+  background: linear-gradient(135deg, var(--primary), var(--accent));
+  color: #fff;
+  font-family: var(--font-heading);
+  font-size: 22px;
+  font-weight: 700;
+  box-shadow: var(--shadow-md);
+}
+
+.brand-copy h1 {
   margin: 0;
-  color: #4CAF50;
-  font-size: 24px;
+  font-family: var(--font-heading);
+  font-size: 1.3rem;
+  letter-spacing: -0.03em;
+}
+
+.brand-copy p {
+  margin: 4px 0 0;
+  color: var(--text-muted);
+  font-size: 0.9rem;
 }
 
 .nav-menu {
   display: flex;
-  gap: 20px;
+  justify-content: center;
+  gap: 10px;
   align-items: center;
+  flex-wrap: wrap;
 }
 
 .nav-menu a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 0 16px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  color: var(--text-secondary);
   text-decoration: none;
-  color: #333;
-  padding: 8px 16px;
-  border-radius: 4px;
-  transition: all 0.3s;
+  font-weight: 600;
+  transition: background-color var(--transition-fast), color var(--transition-fast), border-color var(--transition-fast), transform var(--transition-fast);
 }
 
 .nav-menu a:hover,
 .nav-menu a.active {
-  background-color: #4CAF50;
-  color: white;
+  background: var(--primary-soft);
+  color: var(--primary-strong);
+  border-color: color-mix(in srgb, var(--primary) 28%, transparent);
+  transform: translateY(-1px);
 }
 
-.user-info {
-  font-weight: 500;
-  color: #666;
+.nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  justify-content: flex-end;
+}
+
+.user-chip {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  padding: 10px 14px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 16px;
+  background: var(--surface-muted);
+}
+
+.user-chip__label {
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.user-chip strong {
+  font-size: 0.95rem;
+}
+
+.app-main {
+  position: relative;
+}
+
+.app-main--authenticated {
+  padding-bottom: 32px;
+}
+
+@media (max-width: 960px) {
+  .navbar__inner {
+    grid-template-columns: 1fr;
+    justify-items: stretch;
+  }
+
+  .nav-brand,
+  .nav-actions {
+    justify-content: space-between;
+  }
+
+  .nav-menu {
+    justify-content: flex-start;
+  }
+
+  .public-toolbar {
+    padding-top: 10px;
+  }
+}
+
+@media (max-width: 640px) {
+  .theme-toggle {
+    min-width: auto;
+    padding: 10px 12px;
+  }
+
+  .theme-toggle__meta {
+    font-size: 10px;
+  }
+
+  .nav-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .user-chip {
+    width: 100%;
+  }
+
+  .public-toolbar {
+    padding-top: 6px;
+  }
 }

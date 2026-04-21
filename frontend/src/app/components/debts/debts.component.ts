@@ -1,8 +1,10 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ChartData, ChartOptions } from 'chart.js';
+import { Subscription } from 'rxjs';
 import { DebtService } from '../../services/debt.service';
+import { ThemeService } from '../../services/theme.service';
 import { Debt, DebtCategory, DebtStatus, DebtType, MonthlyReport } from '../../models/debt.model';
 
 @Component({
@@ -10,12 +12,13 @@ import { Debt, DebtCategory, DebtStatus, DebtType, MonthlyReport } from '../../m
   templateUrl: './debts.component.html',
   styleUrls: ['./debts.component.css']
 })
-export class DebtsComponent implements OnInit {
+export class DebtsComponent implements OnInit, OnDestroy {
   debts: Debt[] = [];
   report?: MonthlyReport;
   debtForm!: FormGroup;
   showForm = false;
   loading = false;
+  private themeSubscription?: Subscription;
 
   currentMonth = new Date().getMonth() + 1;
   currentYear = new Date().getFullYear();
@@ -98,12 +101,21 @@ export class DebtsComponent implements OnInit {
 
   constructor(
     private fb: FormBuilder,
-    private debtService: DebtService
+    private debtService: DebtService,
+    private themeService: ThemeService
   ) {}
 
   ngOnInit(): void {
+    this.themeSubscription = this.themeService.theme$.subscribe(() => {
+      this.applyChartTheme();
+    });
+
     this.initForm();
     this.loadDebts();
+  }
+
+  ngOnDestroy(): void {
+    this.themeSubscription?.unsubscribe();
   }
 
   initForm(): void {
@@ -158,17 +170,11 @@ export class DebtsComponent implements OnInit {
     };
     debts.forEach(d => { statusTotals[d.status] = (statusTotals[d.status] || 0) + d.amount; });
 
-    this.statusChartData = {
-      ...this.statusChartData,
-      datasets: [{
-        ...this.statusChartData.datasets[0],
-        data: [
-          statusTotals[DebtStatus.EM_ABERTO],
-          statusTotals[DebtStatus.PAGA],
-          statusTotals[DebtStatus.ATRASADA]
-        ]
-      }]
-    };
+    const statusValues = [
+      statusTotals[DebtStatus.EM_ABERTO],
+      statusTotals[DebtStatus.PAGA],
+      statusTotals[DebtStatus.ATRASADA]
+    ];
 
     // Category breakdown by total amount
     const categoryTotals: Record<string, number> = {};
@@ -179,14 +185,17 @@ export class DebtsComponent implements OnInit {
 
     const sortedCategories = Object.entries(categoryTotals).sort((a, b) => b[1] - a[1]);
 
-    this.categoryChartData = {
-      ...this.categoryChartData,
-      labels: sortedCategories.map(([label]) => label),
-      datasets: [{
-        ...this.categoryChartData.datasets[0],
-        data: sortedCategories.map(([, value]) => value)
-      }]
+    this.statusChartData = {
+      labels: ['Em Aberto', 'Paga', 'Atrasada'],
+      datasets: [this.buildStatusDataset(statusValues)]
     };
+
+    this.categoryChartData = {
+      labels: sortedCategories.map(([label]) => label),
+      datasets: [this.buildCategoryDataset(sortedCategories.map(([, value]) => value))]
+    };
+
+    this.applyChartTheme();
   }
 
   onSubmit(): void {
@@ -294,5 +303,142 @@ export class DebtsComponent implements OnInit {
 
   hasChartData(): boolean {
     return this.debts.length > 0;
+  }
+
+  private applyChartTheme(): void {
+    const statusValues = (this.statusChartData.datasets[0]?.data as number[] | undefined) ?? [0, 0, 0];
+    const categoryValues = (this.categoryChartData.datasets[0]?.data as number[] | undefined) ?? [];
+
+    this.statusChartData = {
+      labels: ['Em Aberto', 'Paga', 'Atrasada'],
+      datasets: [this.buildStatusDataset(statusValues)]
+    };
+
+    this.categoryChartData = {
+      labels: this.categoryChartData.labels ?? [],
+      datasets: [this.buildCategoryDataset(categoryValues)]
+    };
+
+    this.statusChartOptions = this.buildStatusChartOptions();
+    this.categoryChartOptions = this.buildCategoryChartOptions();
+  }
+
+  private buildStatusDataset(values: number[]) {
+    return {
+      data: values,
+      backgroundColor: [
+        this.cssVar('--chart-status-open'),
+        this.cssVar('--chart-status-paid'),
+        this.cssVar('--chart-status-overdue')
+      ],
+      hoverBackgroundColor: [
+        this.cssVar('--chart-status-open'),
+        this.cssVar('--chart-status-paid'),
+        this.cssVar('--chart-status-overdue')
+      ],
+      borderColor: this.cssVar('--chart-surface'),
+      borderWidth: 4
+    };
+  }
+
+  private buildCategoryDataset(values: number[]) {
+    return {
+      label: 'Total por Categoria (R$)',
+      data: values,
+      backgroundColor: [
+        this.cssVar('--chart-bar-1'),
+        this.cssVar('--chart-bar-2'),
+        this.cssVar('--chart-bar-3'),
+        this.cssVar('--chart-bar-4'),
+        this.cssVar('--chart-bar-5'),
+        this.cssVar('--chart-bar-6'),
+        this.cssVar('--chart-bar-7')
+      ],
+      borderColor: this.cssVar('--chart-surface'),
+      borderWidth: 1
+    };
+  }
+
+  private buildStatusChartOptions(): ChartOptions<'doughnut'> {
+    return {
+      responsive: true,
+      maintainAspectRatio: false,
+      cutout: '66%',
+      plugins: {
+        legend: {
+          position: 'bottom',
+          labels: {
+            color: this.cssVar('--chart-axis'),
+            usePointStyle: true,
+            padding: 18,
+            boxWidth: 10
+          }
+        },
+        tooltip: {
+          backgroundColor: this.cssVar('--chart-tooltip-bg'),
+          titleColor: this.cssVar('--chart-tooltip-text'),
+          bodyColor: this.cssVar('--chart-tooltip-text'),
+          borderColor: this.cssVar('--border-strong'),
+          borderWidth: 1,
+          callbacks: {
+            label: (ctx) => {
+              const value = ctx.raw as number;
+              return ` ${new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value)}`;
+            }
+          }
+        }
+      }
+    };
+  }
+
+  private buildCategoryChartOptions(): ChartOptions<'bar'> {
+    return {
+      responsive: true,
+      maintainAspectRatio: false,
+      indexAxis: 'y' as const,
+      scales: {
+        x: {
+          beginAtZero: true,
+          ticks: {
+            color: this.cssVar('--chart-axis'),
+            callback: (value) =>
+              new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 }).format(value as number)
+          },
+          grid: {
+            color: this.cssVar('--chart-grid')
+          }
+        },
+        y: {
+          ticks: {
+            color: this.cssVar('--chart-axis')
+          },
+          grid: {
+            display: false
+          }
+        }
+      },
+      plugins: {
+        legend: {
+          display: false
+        },
+        tooltip: {
+          backgroundColor: this.cssVar('--chart-tooltip-bg'),
+          titleColor: this.cssVar('--chart-tooltip-text'),
+          bodyColor: this.cssVar('--chart-tooltip-text'),
+          borderColor: this.cssVar('--border-strong'),
+          borderWidth: 1,
+          callbacks: {
+            label: (ctx) => {
+              const value = ctx.raw as number;
+              return ` ${new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value)}`;
+            }
+          }
+        }
+      }
+    };
+  }
+
+  private cssVar(name: string): string {
+    return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
   }
 }

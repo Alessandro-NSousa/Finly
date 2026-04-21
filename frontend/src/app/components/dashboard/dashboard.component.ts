@@ -1,7 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ChartData, ChartOptions } from 'chart.js';
+import { Subscription } from 'rxjs';
 import { DashboardService } from '../../services/dashboard.service';
+import { ThemeService } from '../../services/theme.service';
 import { UserService } from '../../services/user.service';
 import { FinancialDashboard } from '../../models/dashboard.model';
 import { User } from '../../models/user.model';
@@ -11,10 +13,11 @@ import { User } from '../../models/user.model';
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.css']
 })
-export class DashboardComponent implements OnInit {
+export class DashboardComponent implements OnInit, OnDestroy {
   dashboard?: FinancialDashboard;
   user?: User;
   loading = true;
+  private themeSubscription?: Subscription;
 
   // Doughnut chart - expense breakdown
   expenseChartData: ChartData<'doughnut'> = {
@@ -84,11 +87,20 @@ export class DashboardComponent implements OnInit {
 
   constructor(
     private dashboardService: DashboardService,
-    private userService: UserService
+    private userService: UserService,
+    private themeService: ThemeService
   ) {}
 
   ngOnInit(): void {
+    this.themeSubscription = this.themeService.theme$.subscribe(() => {
+      this.applyChartTheme();
+    });
+
     this.loadData();
+  }
+
+  ngOnDestroy(): void {
+    this.themeSubscription?.unsubscribe();
   }
 
   loadData(): void {
@@ -123,32 +135,29 @@ export class DashboardComponent implements OnInit {
   }
 
   private updateCharts(dashboard: FinancialDashboard): void {
+    const currentExpenseData = [
+      dashboard.currentFixedExpenses,
+      dashboard.currentVariableExpenses,
+      Math.max(0, dashboard.currentSavings)
+    ];
+
+    const currentComparisonData = [
+      parseFloat(dashboard.fixedExpensesPercentage.toFixed(1)),
+      parseFloat(dashboard.variableExpensesPercentage.toFixed(1)),
+      parseFloat(dashboard.savingsPercentage.toFixed(1))
+    ];
+
     this.expenseChartData = {
-      ...this.expenseChartData,
-      datasets: [{
-        ...this.expenseChartData.datasets[0],
-        data: [
-          dashboard.currentFixedExpenses,
-          dashboard.currentVariableExpenses,
-          Math.max(0, dashboard.currentSavings)
-        ]
-      }]
+      labels: ['Despesas Fixas', 'Despesas Variáveis', 'Poupança'],
+      datasets: [this.buildExpenseDataset(currentExpenseData)]
     };
 
     this.comparisonChartData = {
-      ...this.comparisonChartData,
-      datasets: [
-        {
-          ...this.comparisonChartData.datasets[0],
-          data: [
-            parseFloat(dashboard.fixedExpensesPercentage.toFixed(1)),
-            parseFloat(dashboard.variableExpensesPercentage.toFixed(1)),
-            parseFloat(dashboard.savingsPercentage.toFixed(1))
-          ]
-        },
-        this.comparisonChartData.datasets[1]
-      ]
+      labels: ['Despesas Fixas', 'Despesas Variáveis', 'Poupança'],
+      datasets: this.buildComparisonDatasets(currentComparisonData)
     };
+
+    this.applyChartTheme();
   }
 
   formatCurrency(value: number): string {
@@ -156,5 +165,145 @@ export class DashboardComponent implements OnInit {
       style: 'currency',
       currency: 'BRL'
     }).format(value);
+  }
+
+  private applyChartTheme(): void {
+    const expenseValues = (this.expenseChartData.datasets[0]?.data as number[] | undefined) ?? [0, 0, 0];
+    const currentValues = (this.comparisonChartData.datasets[0]?.data as number[] | undefined) ?? [0, 0, 0];
+
+    this.expenseChartData = {
+      labels: ['Despesas Fixas', 'Despesas Variáveis', 'Poupança'],
+      datasets: [this.buildExpenseDataset(expenseValues)]
+    };
+
+    this.comparisonChartData = {
+      labels: ['Despesas Fixas', 'Despesas Variáveis', 'Poupança'],
+      datasets: this.buildComparisonDatasets(currentValues)
+    };
+
+    this.expenseChartOptions = this.buildExpenseChartOptions();
+    this.comparisonChartOptions = this.buildComparisonChartOptions();
+  }
+
+  private buildExpenseDataset(values: number[]) {
+    return {
+      data: values,
+      backgroundColor: [
+        this.cssVar('--chart-expense-1'),
+        this.cssVar('--chart-expense-2'),
+        this.cssVar('--chart-expense-3')
+      ],
+      hoverBackgroundColor: [
+        this.cssVar('--chart-expense-1'),
+        this.cssVar('--chart-expense-2'),
+        this.cssVar('--chart-expense-3')
+      ],
+      borderColor: this.cssVar('--chart-surface'),
+      borderWidth: 4
+    };
+  }
+
+  private buildComparisonDatasets(values: number[]) {
+    return [
+      {
+        label: 'Atual (%)',
+        data: values,
+        backgroundColor: this.cssVar('--chart-bar-1'),
+        borderColor: this.cssVar('--chart-expense-1'),
+        borderWidth: 1
+      },
+      {
+        label: 'Ideal (%)',
+        data: [50, 30, 20],
+        backgroundColor: this.cssVar('--chart-bar-3'),
+        borderColor: this.cssVar('--chart-expense-3'),
+        borderWidth: 1
+      }
+    ];
+  }
+
+  private buildExpenseChartOptions(): ChartOptions<'doughnut'> {
+    return {
+      responsive: true,
+      maintainAspectRatio: false,
+      cutout: '66%',
+      plugins: {
+        legend: {
+          position: 'bottom',
+          labels: {
+            color: this.cssVar('--chart-axis'),
+            usePointStyle: true,
+            padding: 18,
+            boxWidth: 10
+          }
+        },
+        tooltip: {
+          backgroundColor: this.cssVar('--chart-tooltip-bg'),
+          titleColor: this.cssVar('--chart-tooltip-text'),
+          bodyColor: this.cssVar('--chart-tooltip-text'),
+          borderColor: this.cssVar('--border-strong'),
+          borderWidth: 1,
+          callbacks: {
+            label: (ctx) => {
+              const value = ctx.raw as number;
+              return ` ${new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value)}`;
+            }
+          }
+        }
+      }
+    };
+  }
+
+  private buildComparisonChartOptions(): ChartOptions<'bar'> {
+    return {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        x: {
+          ticks: {
+            color: this.cssVar('--chart-axis')
+          },
+          grid: {
+            display: false
+          }
+        },
+        y: {
+          beginAtZero: true,
+          max: 100,
+          ticks: {
+            color: this.cssVar('--chart-axis'),
+            callback: (value) => `${value}%`
+          },
+          grid: {
+            color: this.cssVar('--chart-grid')
+          }
+        }
+      },
+      plugins: {
+        legend: {
+          position: 'bottom',
+          labels: {
+            color: this.cssVar('--chart-axis'),
+            usePointStyle: true,
+            padding: 18,
+            boxWidth: 10
+          }
+        },
+        tooltip: {
+          backgroundColor: this.cssVar('--chart-tooltip-bg'),
+          titleColor: this.cssVar('--chart-tooltip-text'),
+          bodyColor: this.cssVar('--chart-tooltip-text'),
+          borderColor: this.cssVar('--border-strong'),
+          borderWidth: 1,
+          callbacks: {
+            label: (ctx) => ` ${ctx.dataset.label}: ${(ctx.raw as number).toFixed(1)}%`
+          }
+        }
+      }
+    };
+  }
+
+  private cssVar(name: string): string {
+    return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
   }
 }

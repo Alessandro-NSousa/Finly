@@ -1,17 +1,51 @@
-<div class="app-wrapper" *ngIf="authService.isAuthenticated()">
-  <nav class="navbar">
-    <div class="container">
+<div class="app-shell" [class.app-shell--authenticated]="authService.isAuthenticated()">
+  <nav class="navbar" *ngIf="authService.isAuthenticated()">
+    <div class="container navbar__inner">
       <div class="nav-brand">
-        <h1>💰 Finly</h1>
+        <div class="brand-badge">F</div>
+        <div class="brand-copy">
+          <h1>{{ title }}</h1>
+          <p>Visão financeira do mês</p>
+        </div>
       </div>
+
       <div class="nav-menu">
         <a routerLink="/dashboard" routerLinkActive="active">Dashboard</a>
         <a routerLink="/debts" routerLinkActive="active">Dívidas</a>
-        <span class="user-info">{{ getUserName() }}</span>
-        <button class="btn btn-danger" (click)="logout()">Sair</button>
+      </div>
+
+      <div class="nav-actions">
+        <button
+          type="button"
+          class="theme-toggle theme-toggle--inline"
+          [attr.aria-label]="getThemeActionLabel()"
+          [attr.aria-pressed]="isDarkTheme()"
+          (click)="toggleTheme()">
+          <span class="theme-toggle__meta">Tema</span>
+          <span class="theme-toggle__value">{{ getThemeLabel() }}</span>
+        </button>
+        <div class="user-chip">
+          <span class="user-chip__label">Conta ativa</span>
+          <strong>{{ getUserName() }}</strong>
+        </div>
+        <button class="btn btn-ghost btn-sm" type="button" (click)="logout()">Sair</button>
       </div>
     </div>
   </nav>
-</div>
 
-<router-outlet></router-outlet>
+  <div class="public-toolbar container" *ngIf="!authService.isAuthenticated()">
+    <button
+      type="button"
+      class="theme-toggle theme-toggle--public"
+      [attr.aria-label]="getThemeActionLabel()"
+      [attr.aria-pressed]="isDarkTheme()"
+      (click)="toggleTheme()">
+      <span class="theme-toggle__meta">Tema</span>
+      <span class="theme-toggle__value">{{ getThemeLabel() }}</span>
+    </button>
+  </div>
+
+  <main class="app-main" [class.app-main--authenticated]="authService.isAuthenticated()">
+    <router-outlet></router-outlet>
+  </main>
+</div>
