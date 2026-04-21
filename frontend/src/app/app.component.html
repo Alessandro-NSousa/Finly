@@ -19,10 +19,10 @@
           type="button"
           class="theme-toggle theme-toggle--inline"
           [attr.aria-label]="getThemeActionLabel()"
+          [attr.title]="getThemeActionLabel()"
           [attr.aria-pressed]="isDarkTheme()"
           (click)="toggleTheme()">
-          <span class="theme-toggle__meta">Tema</span>
-          <span class="theme-toggle__value">{{ getThemeLabel() }}</span>
+          <span class="theme-toggle__icon" aria-hidden="true"></span>
         </button>
         <div class="user-chip">
           <span class="user-chip__label">Conta ativa</span>
@@ -38,10 +38,10 @@
       type="button"
       class="theme-toggle theme-toggle--public"
       [attr.aria-label]="getThemeActionLabel()"
+      [attr.title]="getThemeActionLabel()"
       [attr.aria-pressed]="isDarkTheme()"
       (click)="toggleTheme()">
-      <span class="theme-toggle__meta">Tema</span>
-      <span class="theme-toggle__value">{{ getThemeLabel() }}</span>
+      <span class="theme-toggle__icon" aria-hidden="true"></span>
     </button>
   </div>
 
