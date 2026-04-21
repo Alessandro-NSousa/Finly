@@ -137,6 +137,10 @@ body {
   transition: background var(--transition-medium), color var(--transition-fast);
 }
 
+canvas {
+  max-width: 100%;
+}
+
 body::selection {
   background: color-mix(in srgb, var(--primary) 28%, transparent);
 }
@@ -651,6 +655,11 @@ a {
     align-items: flex-start;
   }
 
+  .hero-metric {
+    min-width: 0;
+    width: 100%;
+  }
+
   .auth-card,
   .auth-card--compact {
     grid-template-columns: 1fr;
@@ -679,11 +688,85 @@ a {
     padding: 18px;
   }
 
+  .hero-panel {
+    gap: 16px;
+    align-items: stretch;
+  }
+
+  .hero-panel p,
+  .auth-panel > p {
+    max-width: none;
+  }
+
   .auth-container {
     padding: 18px 10px;
   }
 
   .auth-highlight-grid {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .container {
+    width: min(100%, calc(100% - 16px));
+  }
+
+  .page-shell {
+    gap: 16px;
+    padding: 18px 0 28px;
+  }
+
+  .hero-panel,
+  .card,
+  .panel-surface,
+  .auth-card,
+  .auth-panel {
+    padding: 16px;
+  }
+
+  .hero-panel {
+    gap: 14px;
+  }
+
+  .hero-panel h2 {
+    font-size: clamp(1.5rem, 8vw, 1.9rem);
+  }
+
+  .hero-metric {
+    padding: 16px;
+  }
+
+  .auth-card {
+    gap: 16px;
+    border-radius: 24px;
+  }
+
+  .auth-hero,
+  .auth-panel {
+    padding: 16px;
+    border-radius: 22px;
+  }
+
+  .auth-hero {
+    gap: 20px;
+  }
+
+  .auth-hero h1 {
+    font-size: clamp(1.9rem, 10vw, 2.45rem);
+  }
+
+  .auth-panel h2 {
+    font-size: 1.6rem;
+  }
+
+  .btn {
+    min-height: 44px;
+  }
+
+  .form-group input,
+  .form-group select,
+  .form-group textarea {
+    min-height: 50px;
   }
 }
