@@ -15,6 +15,11 @@ import { DebtsComponent } from './components/debts/debts.component';
 import { ForgotPasswordComponent } from './components/forgot-password/forgot-password.component';
 import { ResetPasswordComponent } from './components/reset-password/reset-password.component';
 import { AuthService } from './services/auth.service';
+import { ThemeService } from './services/theme.service';
+
+export function initializeTheme(themeService: ThemeService): () => void {
+  return () => themeService.initializeTheme();
+}
 
 export function initializeAuthSession(authService: AuthService): () => Promise<void> {
   return () => authService.initializeSession();
@@ -40,6 +45,12 @@ export function initializeAuthSession(authService: AuthService): () => Promise<v
     NgChartsModule
   ],
   providers: [
+    {
+      provide: APP_INITIALIZER,
+      useFactory: initializeTheme,
+      deps: [ThemeService],
+      multi: true
+    },
     {
       provide: APP_INITIALIZER,
       useFactory: initializeAuthSession,

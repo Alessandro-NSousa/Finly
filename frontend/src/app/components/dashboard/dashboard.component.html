@@ -1,68 +1,106 @@
 <div class="container">
-  <div class="page-header">
-    <h2>Dashboard Financeiro</h2>
-    <p *ngIf="user">Renda Mensal: {{ formatCurrency(user.monthlyIncome) }}</p>
-  </div>
-
-  <div *ngIf="loading" class="loading">Carregando...</div>
-
-  <div *ngIf="!loading && dashboard">
-    <div class="alert" [ngClass]="{
-      'alert-danger': dashboard.overBudget,
-      'alert-warning': !dashboard.overBudget && dashboard.savingsPercentage < 20,
-      'alert-success': !dashboard.overBudget && dashboard.savingsPercentage >= 20
-    }">
-      {{ dashboard.recommendation }}
-    </div>
-
-    <div class="stats-grid">
-      <div class="stat-card">
-        <h4>Saldo Disponível</h4>
-        <p class="stat-value" [ngClass]="{'negative': dashboard.availableBalance < 0}">
-          {{ formatCurrency(dashboard.availableBalance) }}
-        </p>
+  <div class="page-shell dashboard-shell">
+    <section class="hero-panel">
+      <div>
+        <span class="section-kicker">Visão geral</span>
+        <h2>Dashboard financeiro</h2>
+        <p>Entenda rapidamente o peso das despesas, a folga do orçamento e a aderência à regra 50/30/20.</p>
       </div>
 
-      <div class="stat-card">
-        <h4>Despesas Fixas</h4>
-        <p class="stat-value">{{ formatCurrency(dashboard.currentFixedExpenses) }}</p>
-        <small>{{ dashboard.fixedExpensesPercentage.toFixed(1) }}% (ideal: 50%)</small>
+      <div class="hero-metric" *ngIf="user">
+        <span>Renda mensal</span>
+        <strong>{{ formatCurrency(user.monthlyIncome) }}</strong>
+      </div>
+    </section>
+
+    <div *ngIf="loading" class="loading-panel">Carregando indicadores do mês...</div>
+
+    <div *ngIf="!loading && dashboard" class="dashboard-content">
+      <div class="alert insight-banner" [ngClass]="{
+        'alert-danger': dashboard.overBudget,
+        'alert-warning': !dashboard.overBudget && dashboard.savingsPercentage < 20,
+        'alert-success': !dashboard.overBudget && dashboard.savingsPercentage >= 20
+      }">
+        <strong>Recomendação do mês</strong>
+        <span>{{ dashboard.recommendation }}</span>
       </div>
 
-      <div class="stat-card">
-        <h4>Despesas Variáveis</h4>
-        <p class="stat-value">{{ formatCurrency(dashboard.currentVariableExpenses) }}</p>
-        <small>{{ dashboard.variableExpensesPercentage.toFixed(1) }}% (ideal: 30%)</small>
+      <div class="stats-grid">
+        <article class="stat-card stat-card--highlight">
+          <div class="stat-card__header">
+            <h4>Saldo disponível</h4>
+            <span class="stat-chip" [ngClass]="dashboard.availableBalance < 0 ? 'stat-chip--danger' : 'stat-chip--success'">
+              {{ dashboard.availableBalance < 0 ? 'Ajuste urgente' : 'Margem atual' }}
+            </span>
+          </div>
+          <p class="stat-value" [ngClass]="{'negative': dashboard.availableBalance < 0}">
+            {{ formatCurrency(dashboard.availableBalance) }}
+          </p>
+          <small>Valor restante após despesas fixas, variáveis e reserva atual.</small>
+        </article>
+
+        <article class="stat-card">
+          <div class="stat-card__header">
+            <h4>Despesas fixas</h4>
+            <span class="stat-chip">Meta 50%</span>
+          </div>
+          <p class="stat-value">{{ formatCurrency(dashboard.currentFixedExpenses) }}</p>
+          <small>{{ dashboard.fixedExpensesPercentage.toFixed(1) }}% da renda mensal comprometida.</small>
+        </article>
+
+        <article class="stat-card">
+          <div class="stat-card__header">
+            <h4>Despesas variáveis</h4>
+            <span class="stat-chip">Meta 30%</span>
+          </div>
+          <p class="stat-value">{{ formatCurrency(dashboard.currentVariableExpenses) }}</p>
+          <small>{{ dashboard.variableExpensesPercentage.toFixed(1) }}% usados em despesas flexíveis.</small>
+        </article>
+
+        <article class="stat-card">
+          <div class="stat-card__header">
+            <h4>Poupança</h4>
+            <span class="stat-chip">Meta 20%</span>
+          </div>
+          <p class="stat-value">{{ formatCurrency(dashboard.currentSavings) }}</p>
+          <small>{{ dashboard.savingsPercentage.toFixed(1) }}% reservados para segurança financeira.</small>
+        </article>
       </div>
 
-      <div class="stat-card">
-        <h4>Poupança</h4>
-        <p class="stat-value">{{ formatCurrency(dashboard.currentSavings) }}</p>
-        <small>{{ dashboard.savingsPercentage.toFixed(1) }}% (ideal: 20%)</small>
-      </div>
-    </div>
+      <div class="charts-grid">
+        <section class="card chart-card">
+          <div class="chart-card__header">
+            <div>
+              <span class="section-kicker">Distribuição</span>
+              <h3>Composição do orçamento</h3>
+            </div>
+            <p>Veja como a renda está sendo distribuída entre despesas obrigatórias, flexíveis e reserva.</p>
+          </div>
+          <div class="chart-wrapper">
+            <canvas baseChart
+              [data]="expenseChartData"
+              [type]="'doughnut'"
+              [options]="expenseChartOptions">
+            </canvas>
+          </div>
+        </section>
 
-    <div class="charts-grid">
-      <div class="card chart-card">
-        <h3>Distribuição de Gastos</h3>
-        <div class="chart-wrapper">
-          <canvas baseChart
-            [data]="expenseChartData"
-            [type]="'doughnut'"
-            [options]="expenseChartOptions">
-          </canvas>
-        </div>
-      </div>
-
-      <div class="card chart-card">
-        <h3>Regra 50/30/20 - Atual vs. Ideal</h3>
-        <div class="chart-wrapper">
-          <canvas baseChart
-            [data]="comparisonChartData"
-            [type]="'bar'"
-            [options]="comparisonChartOptions">
-          </canvas>
-        </div>
+        <section class="card chart-card">
+          <div class="chart-card__header">
+            <div>
+              <span class="section-kicker">Comparativo</span>
+              <h3>Atual x meta 50/30/20</h3>
+            </div>
+            <p>Compare o mês corrente com a distribuição ideal e identifique rapidamente o principal desvio.</p>
+          </div>
+          <div class="chart-wrapper">
+            <canvas baseChart
+              [data]="comparisonChartData"
+              [type]="'bar'"
+              [options]="comparisonChartOptions">
+            </canvas>
+          </div>
+        </section>
       </div>
     </div>
   </div>

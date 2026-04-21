@@ -1,80 +1,102 @@
 <div class="auth-container">
   <div class="auth-card">
-    <h2>Criar Conta</h2>
-    <p>Cadastre-se para começar</p>
-
-    <div *ngIf="errorMessage" class="alert alert-danger">
-      {{ errorMessage }}
-    </div>
-
-    <div *ngIf="successMessage" class="alert alert-success">
-      {{ successMessage }}
-      <div style="margin-top: 15px;">
-        <p>Não recebeu o email? <button type="button" class="btn-link" (click)="resendEmail()" [disabled]="loading">Reenviar</button></p>
+    <section class="auth-hero">
+      <div>
+        <span class="auth-eyebrow">Comece organizado</span>
+        <h1>Monte sua base financeira em poucos minutos</h1>
+        <p>Cadastre sua conta, informe a renda mensal e comece com uma visão mais clara do que cabe no mês atual.</p>
       </div>
-    </div>
 
-    <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" *ngIf="!successMessage">
-      <div class="form-group">
-        <label for="name">Nome</label>
-        <input
-          type="text"
-          id="name"
-          formControlName="name"
-          placeholder="Seu nome"
-        />
-        <div *ngIf="registerForm.get('name')?.invalid && registerForm.get('name')?.touched" class="error-text">
-          Nome é obrigatório
+      <div class="auth-highlight-grid">
+        <div class="auth-highlight">
+          <strong>Ativação por email</strong>
+          <span>Entrada segura para manter histórico e preferências sincronizados.</span>
+        </div>
+        <div class="auth-highlight">
+          <strong>Renda como referência</strong>
+          <span>O painel passa a comparar gastos, metas e saldo desde o primeiro acesso.</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="auth-panel">
+      <span class="section-kicker">Cadastro</span>
+      <h2>Criar conta</h2>
+      <p>Abra sua área de controle e receba o link de ativação no email cadastrado.</p>
+
+      <div *ngIf="errorMessage" class="alert alert-danger">
+        {{ errorMessage }}
+      </div>
+
+      <div *ngIf="successMessage" class="alert alert-success">
+        {{ successMessage }}
+        <div class="auth-inline-actions">
+          <p>Não recebeu o email? <button type="button" class="btn-link" (click)="resendEmail()" [disabled]="loading">Reenviar</button></p>
         </div>
       </div>
 
-      <div class="form-group">
-        <label for="email">Email</label>
-        <input
-          type="email"
-          id="email"
-          formControlName="email"
-          placeholder="seu@email.com"
-        />
-        <div *ngIf="registerForm.get('email')?.invalid && registerForm.get('email')?.touched" class="error-text">
-          Email inválido
+      <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" *ngIf="!successMessage">
+        <div class="form-group">
+          <label for="name">Nome</label>
+          <input
+            type="text"
+            id="name"
+            formControlName="name"
+            placeholder="Seu nome"
+          />
+          <div *ngIf="registerForm.get('name')?.invalid && registerForm.get('name')?.touched" class="error-text">
+            Nome é obrigatório
+          </div>
         </div>
-      </div>
 
-      <div class="form-group">
-        <label for="password">Senha</label>
-        <input
-          type="password"
-          id="password"
-          formControlName="password"
-          placeholder="••••••"
-        />
-        <div *ngIf="registerForm.get('password')?.invalid && registerForm.get('password')?.touched" class="error-text">
-          Mínimo 6 caracteres
+        <div class="form-group">
+          <label for="email">Email</label>
+          <input
+            type="email"
+            id="email"
+            formControlName="email"
+            placeholder="seu@email.com"
+          />
+          <div *ngIf="registerForm.get('email')?.invalid && registerForm.get('email')?.touched" class="error-text">
+            Email inválido
+          </div>
         </div>
-      </div>
 
-      <div class="form-group">
-        <label for="monthlyIncome">Renda Mensal (R$)</label>
-        <input
-          type="number"
-          id="monthlyIncome"
-          formControlName="monthlyIncome"
-          placeholder="5000.00"
-          step="0.01"
-        />
-        <div *ngIf="registerForm.get('monthlyIncome')?.invalid && registerForm.get('monthlyIncome')?.touched" class="error-text">
-          Informe um valor maior que zero
+        <div class="form-group">
+          <label for="password">Senha</label>
+          <input
+            type="password"
+            id="password"
+            formControlName="password"
+            placeholder="••••••"
+          />
+          <div *ngIf="registerForm.get('password')?.invalid && registerForm.get('password')?.touched" class="error-text">
+            Mínimo 6 caracteres
+          </div>
         </div>
+
+        <div class="form-group">
+          <label for="monthlyIncome">Renda Mensal (R$)</label>
+          <input
+            type="number"
+            id="monthlyIncome"
+            formControlName="monthlyIncome"
+            placeholder="5000.00"
+            step="0.01"
+          />
+          <div *ngIf="registerForm.get('monthlyIncome')?.invalid && registerForm.get('monthlyIncome')?.touched" class="error-text">
+            Informe um valor maior que zero
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-block" [disabled]="loading || registerForm.invalid">
+          {{ loading ? 'Criando conta...' : 'Criar Conta' }}
+        </button>
+      </form>
+
+      <div class="auth-footer">
+        <p>Já tem uma conta? <a routerLink="/login">Entrar</a></p>
       </div>
-
-      <button type="submit" class="btn btn-primary btn-block" [disabled]="loading || registerForm.invalid">
-        {{ loading ? 'Criando conta...' : 'Criar Conta' }}
-      </button>
-    </form>
-
-    <div class="auth-footer">
-      <p>Já tem uma conta? <a routerLink="/login">Entrar</a></p>
-    </div>
+    </section>
   </div>
 </div>
