@@ -1,3 +1,110 @@
 :host {
   display: block;
 }
+
+.login-mobile-header {
+  display: none;
+}
+
+.login-mobile-brand {
+  display: block;
+  font-family: var(--font-heading);
+  font-size: 1.9rem;
+  letter-spacing: -0.04em;
+  line-height: 0.98;
+}
+
+@media (max-width: 960px) {
+  .login-layout {
+    min-height: auto;
+    padding-block: 12px 20px;
+  }
+
+  .login-layout::before,
+  .login-layout::after {
+    display: none;
+  }
+
+  .login-card {
+    gap: 0;
+    padding: 14px;
+    background: color-mix(in srgb, var(--surface-strong) 92%, transparent);
+    backdrop-filter: blur(12px);
+  }
+
+  .login-hero {
+    display: none;
+  }
+
+  .login-panel {
+    padding: 0;
+    border: none;
+    background: transparent;
+  }
+
+  .login-mobile-header {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 18px;
+  }
+
+  .login-mobile-header .auth-eyebrow::before {
+    width: 24px;
+  }
+
+  .login-mobile-header p {
+    color: var(--text-secondary);
+    line-height: 1.55;
+  }
+
+  .login-panel > p {
+    margin-bottom: 20px;
+  }
+
+  .login-footer {
+    margin-top: 18px;
+    padding-top: 14px;
+    border-top: 1px solid var(--border-subtle);
+    font-size: 0.95rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .login-layout {
+    padding-inline: 8px;
+  }
+
+  .login-card {
+    padding: 12px;
+    border-radius: 22px;
+  }
+
+  .login-mobile-header {
+    gap: 6px;
+    margin-bottom: 16px;
+  }
+
+  .login-mobile-brand {
+    font-size: 1.7rem;
+  }
+
+  .login-panel h2 {
+    font-size: 1.45rem;
+    margin-bottom: 6px;
+  }
+
+  .login-panel > p {
+    margin-bottom: 16px;
+    font-size: 0.95rem;
+  }
+
+  .login-panel .form-group {
+    margin-bottom: 14px;
+  }
+
+  .login-footer {
+    margin-top: 16px;
+    padding-top: 12px;
+  }
+}
