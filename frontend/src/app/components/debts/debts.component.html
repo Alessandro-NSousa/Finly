@@ -8,11 +8,15 @@
       </div>
 
       <div class="debts-hero-actions">
-        <button class="btn btn-primary" type="button" (click)="showForm = !showForm">
-          {{ showForm ? 'Cancelar' : 'Nova dívida' }}
+        <button class="btn btn-primary" type="button" (click)="openCreateDebtModal()">
+          Nova dívida
         </button>
       </div>
     </section>
+
+    <div *ngIf="successMessage" class="alert alert-success debts-feedback" role="status" aria-live="polite">
+      {{ successMessage }}
+    </div>
 
     <section class="panel-surface month-selector">
       <button class="btn btn-secondary btn-sm" type="button" (click)="changeMonth(-1)">Mês anterior</button>
@@ -56,73 +60,6 @@
         <small>Renda base: {{ formatCurrency(report.monthlyIncome) }}</small>
       </article>
     </div>
-
-    <section *ngIf="showForm" class="panel-surface debt-form-panel">
-      <div class="section-heading">
-        <div>
-          <span class="section-kicker">Novo lançamento</span>
-          <h3>Adicionar dívida</h3>
-        </div>
-        <p>Cadastre compromissos recorrentes, parcelados ou variáveis para acompanhar o impacto no mês.</p>
-      </div>
-
-      <form [formGroup]="debtForm" (ngSubmit)="onSubmit()">
-        <div class="form-grid">
-          <div class="form-group">
-            <label>Nome</label>
-            <input type="text" formControlName="name" placeholder="Ex: Conta de luz"/>
-          </div>
-
-          <div class="form-group">
-            <label>Categoria</label>
-            <select formControlName="category">
-              <option *ngFor="let cat of categories" [value]="cat">
-                {{ getCategoryLabel(cat) }}
-              </option>
-            </select>
-          </div>
-
-          <div class="form-group">
-            <label>Valor (R$)</label>
-            <input type="number" formControlName="amount" step="0.01" placeholder="150.00"/>
-          </div>
-
-          <div class="form-group">
-            <label>Tipo</label>
-            <select formControlName="type">
-              <option *ngFor="let type of types" [value]="type">
-                {{ getTypeLabel(type) }}
-              </option>
-            </select>
-          </div>
-
-          <div class="form-group">
-            <label>Status</label>
-            <select formControlName="status">
-              <option *ngFor="let status of statuses" [value]="status">
-                {{ getStatusLabel(status) }}
-              </option>
-            </select>
-          </div>
-
-          <div class="form-group" *ngIf="debtForm.get('type')?.value === 'PARCELADA'">
-            <label>Número de parcelas</label>
-            <input type="number" formControlName="totalInstallments" placeholder="12"/>
-          </div>
-
-          <div class="form-group form-group--checkbox" *ngIf="debtForm.get('type')?.value === 'FIXA'">
-            <label>
-              <input type="checkbox" formControlName="isFixedTemplate"/>
-              Replicar automaticamente para o restante do ano
-            </label>
-          </div>
-        </div>
-
-        <button type="submit" class="btn btn-primary" [disabled]="debtForm.invalid">
-          Criar dívida
-        </button>
-      </form>
-    </section>
 
     <section class="debts-section">
       <div class="section-heading section-heading--split">
@@ -213,6 +150,99 @@
             [options]="categoryChartOptions">
           </canvas>
         </div>
+      </section>
+    </div>
+
+    <div *ngIf="isCreateDebtModalOpen" class="debt-modal" (click)="closeCreateDebtModal()">
+      <section
+        class="debt-modal__dialog panel-surface"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="createDebtModalTitle"
+        aria-describedby="createDebtModalDescription"
+        [attr.aria-busy]="submittingDebt"
+        tabindex="-1"
+        (click)="$event.stopPropagation()">
+        <div class="debt-modal__header">
+          <div>
+            <span class="section-kicker">Novo lançamento</span>
+            <h3 id="createDebtModalTitle">Adicionar dívida</h3>
+          </div>
+
+          <button class="btn btn-ghost btn-sm debt-modal__close" type="button" (click)="closeCreateDebtModal()" [disabled]="submittingDebt">
+            Fechar
+          </button>
+        </div>
+
+        <p id="createDebtModalDescription" class="debt-modal__description">
+          Cadastre compromissos recorrentes, parcelados ou variáveis para acompanhar o impacto no mês.
+        </p>
+
+        <div *ngIf="createDebtErrorMessage" class="alert alert-danger" role="alert">
+          {{ createDebtErrorMessage }}
+        </div>
+
+        <form [formGroup]="debtForm" (ngSubmit)="onSubmit()" class="debt-modal__form">
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="debt-name">Nome</label>
+              <input #debtNameInput id="debt-name" type="text" formControlName="name" placeholder="Ex: Conta de luz"/>
+            </div>
+
+            <div class="form-group">
+              <label for="debt-category">Categoria</label>
+              <select id="debt-category" formControlName="category">
+                <option *ngFor="let cat of categories" [value]="cat">
+                  {{ getCategoryLabel(cat) }}
+                </option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="debt-amount">Valor (R$)</label>
+              <input id="debt-amount" type="number" formControlName="amount" step="0.01" placeholder="150.00"/>
+            </div>
+
+            <div class="form-group">
+              <label for="debt-type">Tipo</label>
+              <select id="debt-type" formControlName="type">
+                <option *ngFor="let type of types" [value]="type">
+                  {{ getTypeLabel(type) }}
+                </option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="debt-status">Status</label>
+              <select id="debt-status" formControlName="status">
+                <option *ngFor="let status of statuses" [value]="status">
+                  {{ getStatusLabel(status) }}
+                </option>
+              </select>
+            </div>
+
+            <div class="form-group" *ngIf="debtForm.get('type')?.value === 'PARCELADA'">
+              <label for="debt-installments">Número de parcelas</label>
+              <input id="debt-installments" type="number" formControlName="totalInstallments" placeholder="12"/>
+            </div>
+
+            <div class="form-group form-group--checkbox" *ngIf="debtForm.get('type')?.value === 'FIXA'">
+              <label for="debt-fixed-template">
+                <input id="debt-fixed-template" type="checkbox" formControlName="isFixedTemplate"/>
+                Replicar automaticamente para o restante do ano
+              </label>
+            </div>
+          </div>
+
+          <div class="debt-modal__actions">
+            <button type="button" class="btn btn-secondary" (click)="closeCreateDebtModal()" [disabled]="submittingDebt">
+              Cancelar
+            </button>
+            <button type="submit" class="btn btn-primary" [disabled]="submittingDebt || debtForm.invalid">
+              {{ submittingDebt ? 'Criando dívida...' : 'Criar dívida' }}
+            </button>
+          </div>
+        </form>
       </section>
     </div>
   </div>

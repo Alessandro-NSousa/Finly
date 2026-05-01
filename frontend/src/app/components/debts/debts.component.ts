@@ -1,4 +1,5 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { DOCUMENT } from '@angular/common';
+import { Component, ElementRef, HostListener, Inject, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ChartData, ChartOptions } from 'chart.js';
@@ -16,9 +17,15 @@ export class DebtsComponent implements OnInit, OnDestroy {
   debts: Debt[] = [];
   report?: MonthlyReport;
   debtForm!: FormGroup;
-  showForm = false;
+  isCreateDebtModalOpen = false;
   loading = false;
+  submittingDebt = false;
+  successMessage = '';
+  createDebtErrorMessage = '';
   private themeSubscription?: Subscription;
+
+  @ViewChild('debtNameInput')
+  private debtNameInput?: ElementRef<HTMLInputElement>;
 
   currentMonth = new Date().getMonth() + 1;
   currentYear = new Date().getFullYear();
@@ -102,7 +109,8 @@ export class DebtsComponent implements OnInit, OnDestroy {
   constructor(
     private fb: FormBuilder,
     private debtService: DebtService,
-    private themeService: ThemeService
+    private themeService: ThemeService,
+    @Inject(DOCUMENT) private document: Document
   ) {}
 
   ngOnInit(): void {
@@ -116,6 +124,7 @@ export class DebtsComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.themeSubscription?.unsubscribe();
+    this.document.body.classList.remove('modal-open');
   }
 
   initForm(): void {
@@ -200,18 +209,28 @@ export class DebtsComponent implements OnInit, OnDestroy {
 
   onSubmit(): void {
     if (this.debtForm.invalid) {
+      this.debtForm.markAllAsTouched();
       return;
     }
 
-    const debtData = this.debtForm.value;
+    this.submittingDebt = true;
+    this.successMessage = '';
+    this.createDebtErrorMessage = '';
+
+    const debtData = this.debtForm.getRawValue();
     this.debtService.createDebt(debtData).subscribe({
       next: () => {
+        this.submittingDebt = false;
         this.loadDebts();
-        this.showForm = false;
-        this.debtForm.reset();
-        this.initForm();
+        this.isCreateDebtModalOpen = false;
+        this.updateBodyScrollLock();
+        this.resetCreateDebtForm();
+        this.successMessage = `A dívida "${debtData.name}" foi criada com sucesso.`;
       },
       error: (error) => {
+        this.submittingDebt = false;
+        this.createDebtErrorMessage = this.getCreateDebtErrorMessage(error);
+
         if (!this.isAuthError(error)) {
           console.error('Erro ao criar dívida', error);
         }
@@ -263,6 +282,39 @@ export class DebtsComponent implements OnInit, OnDestroy {
     this.loadDebts();
   }
 
+  openCreateDebtModal(): void {
+    this.successMessage = '';
+    this.createDebtErrorMessage = '';
+    this.resetCreateDebtForm();
+    this.isCreateDebtModalOpen = true;
+    this.updateBodyScrollLock();
+
+    window.setTimeout(() => {
+      this.debtNameInput?.nativeElement.focus();
+    });
+  }
+
+  closeCreateDebtModal(): void {
+    if (this.submittingDebt) {
+      return;
+    }
+
+    this.isCreateDebtModalOpen = false;
+    this.createDebtErrorMessage = '';
+    this.resetCreateDebtForm();
+    this.updateBodyScrollLock();
+  }
+
+  @HostListener('document:keydown.escape', ['$event'])
+  handleEscapeKey(event: KeyboardEvent): void {
+    if (!this.isCreateDebtModalOpen || this.submittingDebt) {
+      return;
+    }
+
+    event.preventDefault();
+    this.closeCreateDebtModal();
+  }
+
   formatCurrency(value: number): string {
     return new Intl.NumberFormat('pt-BR', {
       style: 'currency',
@@ -303,6 +355,22 @@ export class DebtsComponent implements OnInit, OnDestroy {
 
   hasChartData(): boolean {
     return this.debts.length > 0;
+  }
+
+  private resetCreateDebtForm(): void {
+    this.initForm();
+  }
+
+  private updateBodyScrollLock(): void {
+    this.document.body.classList.toggle('modal-open', this.isCreateDebtModalOpen);
+  }
+
+  private getCreateDebtErrorMessage(error: unknown): string {
+    if (error instanceof HttpErrorResponse) {
+      return error.error?.message || 'Não foi possível criar a dívida agora. Revise os dados e tente novamente.';
+    }
+
+    return 'Não foi possível criar a dívida agora. Revise os dados e tente novamente.';
   }
 
   private applyChartTheme(): void {
