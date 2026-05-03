@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { Debt, DebtRequest, DebtStatus, MonthlyReport } from '../models/debt.model';
+import { Debt, DebtRequest, DebtStatus, DebtUpdateRequest, MonthlyReport } from '../models/debt.model';
 import { environment } from '../../environments/environment';
 
 @Injectable({
@@ -14,6 +14,10 @@ export class DebtService {
 
   createDebt(request: DebtRequest): Observable<Debt> {
     return this.http.post<Debt>(this.apiUrl, request);
+  }
+
+  updateDebt(id: number, request: DebtUpdateRequest): Observable<Debt> {
+    return this.http.put<Debt>(`${this.apiUrl}/${id}`, request);
   }
 
   getDebtsByMonth(month: number, year: number): Observable<Debt[]> {

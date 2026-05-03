@@ -2,6 +2,7 @@ package com.finly.service;
 
 import com.finly.dto.DebtRequest;
 import com.finly.dto.DebtResponse;
+import com.finly.dto.DebtUpdateRequest;
 import com.finly.dto.MonthlyReportResponse;
 import com.finly.model.*;
 import com.finly.repository.DebtRepository;
@@ -139,14 +140,22 @@ public class DebtService {
     }
 
     @Transactional
-    public DebtResponse updateDebtStatus(Long debtId, DebtStatus newStatus) {
-        Debt debt = debtRepository.findById(debtId)
-                .orElseThrow(() -> new RuntimeException("Dívida não encontrada"));
+    public DebtResponse updateDebt(Long debtId, DebtUpdateRequest request) {
+        Debt debt = getOwnedDebt(debtId);
 
-        User currentUser = userService.getCurrentUserEntity();
-        if (!debt.getUser().getId().equals(currentUser.getId())) {
-            throw new RuntimeException("Acesso negado");
-        }
+        debt.setName(request.getName());
+        debt.setCategory(request.getCategory());
+        debt.setAmount(request.getAmount());
+        debt.setStatus(request.getStatus());
+
+        debt = debtRepository.save(debt);
+
+        return convertToResponse(debt);
+    }
+
+    @Transactional
+    public DebtResponse updateDebtStatus(Long debtId, DebtStatus newStatus) {
+        Debt debt = getOwnedDebt(debtId);
 
         debt.setStatus(newStatus);
         debt = debtRepository.save(debt);
@@ -156,13 +165,7 @@ public class DebtService {
 
     @Transactional
     public void deleteDebt(Long debtId) {
-        Debt debt = debtRepository.findById(debtId)
-                .orElseThrow(() -> new RuntimeException("Dívida não encontrada"));
-
-        User currentUser = userService.getCurrentUserEntity();
-        if (!debt.getUser().getId().equals(currentUser.getId())) {
-            throw new RuntimeException("Acesso negado");
-        }
+        Debt debt = getOwnedDebt(debtId);
 
         debtRepository.delete(debt);
     }
@@ -219,6 +222,18 @@ public class DebtService {
                 }
             }
         }
+    }
+
+    private Debt getOwnedDebt(Long debtId) {
+        Debt debt = debtRepository.findById(debtId)
+                .orElseThrow(() -> new RuntimeException("Dívida não encontrada"));
+
+        User currentUser = userService.getCurrentUserEntity();
+        if (!debt.getUser().getId().equals(currentUser.getId())) {
+            throw new RuntimeException("Acesso negado");
+        }
+
+        return debt;
     }
 
     private DebtResponse convertToResponse(Debt debt) {
