@@ -101,6 +101,9 @@
           </div>
 
           <div class="debt-actions">
+            <button class="btn btn-secondary btn-sm" type="button" (click)="openEditDebtModal(debt)">
+              Editar
+            </button>
             <button *ngIf="debt.status !== DebtStatus.PAGA" class="btn btn-primary btn-sm" type="button"
                     (click)="updateStatus(debt, DebtStatus.PAGA)">
               Marcar como paga
@@ -165,8 +168,8 @@
         (click)="$event.stopPropagation()">
         <div class="debt-modal__header">
           <div>
-            <span class="section-kicker">Novo lançamento</span>
-            <h3 id="createDebtModalTitle">Adicionar dívida</h3>
+            <span class="section-kicker">{{ editingDebt ? 'Editar lançamento' : 'Novo lançamento' }}</span>
+            <h3 id="createDebtModalTitle">{{ editingDebt ? 'Editar dívida' : 'Adicionar dívida' }}</h3>
           </div>
 
           <button class="btn btn-ghost btn-sm debt-modal__close" type="button" (click)="closeCreateDebtModal()" [disabled]="submittingDebt">
@@ -175,11 +178,15 @@
         </div>
 
         <p id="createDebtModalDescription" class="debt-modal__description">
-          Cadastre compromissos recorrentes, parcelados ou variáveis para acompanhar o impacto no mês.
+          {{ editingDebt ? 'Atualize os dados do lançamento selecionado sem alterar os demais itens relacionados.' : 'Cadastre compromissos recorrentes, parcelados ou variáveis para acompanhar o impacto no mês.' }}
         </p>
 
-        <div *ngIf="createDebtErrorMessage" class="alert alert-danger" role="alert">
-          {{ createDebtErrorMessage }}
+        <p *ngIf="editingDebt && editingDebt.type !== 'VARIAVEL'" class="debt-modal__description">
+          Este ajuste afeta apenas {{ editingDebt.type === 'FIXA' ? 'esta ocorrência fixa' : 'esta parcela' }}.
+        </p>
+
+        <div *ngIf="debtFormErrorMessage" class="alert alert-danger" role="alert">
+          {{ debtFormErrorMessage }}
         </div>
 
         <form [formGroup]="debtForm" (ngSubmit)="onSubmit()" class="debt-modal__form">
@@ -203,7 +210,7 @@
               <input id="debt-amount" type="number" formControlName="amount" step="0.01" placeholder="150.00"/>
             </div>
 
-            <div class="form-group">
+            <div class="form-group" *ngIf="!editingDebt">
               <label for="debt-type">Tipo</label>
               <select id="debt-type" formControlName="type">
                 <option *ngFor="let type of types" [value]="type">
@@ -221,12 +228,12 @@
               </select>
             </div>
 
-            <div class="form-group" *ngIf="debtForm.get('type')?.value === 'PARCELADA'">
+            <div class="form-group" *ngIf="!editingDebt && debtForm.get('type')?.value === 'PARCELADA'">
               <label for="debt-installments">Número de parcelas</label>
               <input id="debt-installments" type="number" formControlName="totalInstallments" placeholder="12"/>
             </div>
 
-            <div class="form-group form-group--checkbox" *ngIf="debtForm.get('type')?.value === 'FIXA'">
+            <div class="form-group form-group--checkbox" *ngIf="!editingDebt && debtForm.get('type')?.value === 'FIXA'">
               <label for="debt-fixed-template">
                 <input id="debt-fixed-template" type="checkbox" formControlName="isFixedTemplate"/>
                 Replicar automaticamente para o restante do ano
@@ -239,7 +246,7 @@
               Cancelar
             </button>
             <button type="submit" class="btn btn-primary" [disabled]="submittingDebt || debtForm.invalid">
-              {{ submittingDebt ? 'Criando dívida...' : 'Criar dívida' }}
+              {{ submittingDebt ? (editingDebt ? 'Atualizando dívida...' : 'Criando dívida...') : (editingDebt ? 'Salvar alterações' : 'Criar dívida') }}
             </button>
           </div>
         </form>

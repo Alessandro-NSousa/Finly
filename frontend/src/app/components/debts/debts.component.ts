@@ -3,10 +3,11 @@ import { Component, ElementRef, HostListener, Inject, OnDestroy, OnInit, ViewChi
 import { HttpErrorResponse } from '@angular/common/http';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ChartData, ChartOptions } from 'chart.js';
+import { Observable } from 'rxjs';
 import { Subscription } from 'rxjs';
 import { DebtService } from '../../services/debt.service';
 import { ThemeService } from '../../services/theme.service';
-import { Debt, DebtCategory, DebtStatus, DebtType, MonthlyReport } from '../../models/debt.model';
+import { Debt, DebtCategory, DebtRequest, DebtStatus, DebtType, DebtUpdateRequest, MonthlyReport } from '../../models/debt.model';
 
 @Component({
   selector: 'app-debts',
@@ -18,10 +19,11 @@ export class DebtsComponent implements OnInit, OnDestroy {
   report?: MonthlyReport;
   debtForm!: FormGroup;
   isCreateDebtModalOpen = false;
+  editingDebt: Debt | null = null;
   loading = false;
   submittingDebt = false;
   successMessage = '';
-  createDebtErrorMessage = '';
+  debtFormErrorMessage = '';
   private themeSubscription?: Subscription;
 
   @ViewChild('debtNameInput')
@@ -215,24 +217,33 @@ export class DebtsComponent implements OnInit, OnDestroy {
 
     this.submittingDebt = true;
     this.successMessage = '';
-    this.createDebtErrorMessage = '';
+    this.debtFormErrorMessage = '';
 
-    const debtData = this.debtForm.getRawValue();
-    this.debtService.createDebt(debtData).subscribe({
+    const editingDebt = this.editingDebt;
+    const isEditing = editingDebt !== null;
+    const debtName = this.debtForm.get('name')?.value;
+    const request$: Observable<Debt> = isEditing
+      ? this.debtService.updateDebt(editingDebt.id, this.buildDebtUpdateRequest())
+      : this.debtService.createDebt(this.buildDebtRequest());
+
+    request$.subscribe({
       next: () => {
         this.submittingDebt = false;
         this.loadDebts();
         this.isCreateDebtModalOpen = false;
         this.updateBodyScrollLock();
-        this.resetCreateDebtForm();
-        this.successMessage = `A dívida "${debtData.name}" foi criada com sucesso.`;
+        this.resetDebtForm();
+        this.editingDebt = null;
+        this.successMessage = isEditing
+          ? `A dívida "${debtName}" foi atualizada com sucesso.`
+          : `A dívida "${debtName}" foi criada com sucesso.`;
       },
       error: (error) => {
         this.submittingDebt = false;
-        this.createDebtErrorMessage = this.getCreateDebtErrorMessage(error);
+        this.debtFormErrorMessage = this.getDebtFormErrorMessage(error, isEditing ? 'atualizar' : 'criar');
 
         if (!this.isAuthError(error)) {
-          console.error('Erro ao criar dívida', error);
+          console.error(`Erro ao ${isEditing ? 'atualizar' : 'criar'} dívida`, error);
         }
       }
     });
@@ -284,8 +295,22 @@ export class DebtsComponent implements OnInit, OnDestroy {
 
   openCreateDebtModal(): void {
     this.successMessage = '';
-    this.createDebtErrorMessage = '';
-    this.resetCreateDebtForm();
+    this.debtFormErrorMessage = '';
+    this.editingDebt = null;
+    this.resetDebtForm();
+    this.isCreateDebtModalOpen = true;
+    this.updateBodyScrollLock();
+
+    window.setTimeout(() => {
+      this.debtNameInput?.nativeElement.focus();
+    });
+  }
+
+  openEditDebtModal(debt: Debt): void {
+    this.successMessage = '';
+    this.debtFormErrorMessage = '';
+    this.editingDebt = debt;
+    this.resetDebtForm(debt);
     this.isCreateDebtModalOpen = true;
     this.updateBodyScrollLock();
 
@@ -300,13 +325,14 @@ export class DebtsComponent implements OnInit, OnDestroy {
     }
 
     this.isCreateDebtModalOpen = false;
-    this.createDebtErrorMessage = '';
-    this.resetCreateDebtForm();
+    this.debtFormErrorMessage = '';
+    this.editingDebt = null;
+    this.resetDebtForm();
     this.updateBodyScrollLock();
   }
 
   @HostListener('document:keydown.escape', ['$event'])
-  handleEscapeKey(event: KeyboardEvent): void {
+  handleEscapeKey(event: Event): void {
     if (!this.isCreateDebtModalOpen || this.submittingDebt) {
       return;
     }
@@ -357,20 +383,51 @@ export class DebtsComponent implements OnInit, OnDestroy {
     return this.debts.length > 0;
   }
 
-  private resetCreateDebtForm(): void {
+  private resetDebtForm(debt?: Debt): void {
     this.initForm();
+
+    if (!debt) {
+      return;
+    }
+
+    this.debtForm.patchValue({
+      name: debt.name,
+      category: debt.category,
+      amount: debt.amount,
+      status: debt.status,
+      referenceMonth: debt.referenceMonth,
+      referenceYear: debt.referenceYear,
+      type: debt.type,
+      isFixedTemplate: debt.isFixedTemplate,
+      totalInstallments: debt.totalInstallments ?? null
+    });
   }
 
   private updateBodyScrollLock(): void {
     this.document.body.classList.toggle('modal-open', this.isCreateDebtModalOpen);
   }
 
-  private getCreateDebtErrorMessage(error: unknown): string {
+  private buildDebtRequest(): DebtRequest {
+    return this.debtForm.getRawValue() as DebtRequest;
+  }
+
+  private buildDebtUpdateRequest(): DebtUpdateRequest {
+    const rawValue = this.debtForm.getRawValue();
+
+    return {
+      name: rawValue.name,
+      category: rawValue.category,
+      amount: rawValue.amount,
+      status: rawValue.status
+    };
+  }
+
+  private getDebtFormErrorMessage(error: unknown, action: 'criar' | 'atualizar'): string {
     if (error instanceof HttpErrorResponse) {
-      return error.error?.message || 'Não foi possível criar a dívida agora. Revise os dados e tente novamente.';
+      return error.error?.message || `Não foi possível ${action} a dívida agora. Revise os dados e tente novamente.`;
     }
 
-    return 'Não foi possível criar a dívida agora. Revise os dados e tente novamente.';
+    return `Não foi possível ${action} a dívida agora. Revise os dados e tente novamente.`;
   }
 
   private applyChartTheme(): void {

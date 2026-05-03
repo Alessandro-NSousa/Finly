@@ -2,6 +2,7 @@ package com.finly.controller;
 
 import com.finly.dto.DebtRequest;
 import com.finly.dto.DebtResponse;
+import com.finly.dto.DebtUpdateRequest;
 import com.finly.dto.MonthlyReportResponse;
 import com.finly.model.DebtStatus;
 import com.finly.service.DebtService;
@@ -40,6 +41,16 @@ public class DebtController {
     ) {
         List<DebtResponse> debts = debtService.getDebtsByMonth(month, year);
         return ResponseEntity.ok(debts);
+    }
+
+    @PutMapping("/{id}")
+    @Operation(summary = "Atualizar uma dívida")
+    public ResponseEntity<DebtResponse> updateDebt(
+            @PathVariable Long id,
+            @Valid @RequestBody DebtUpdateRequest request
+    ) {
+        DebtResponse debt = debtService.updateDebt(id, request);
+        return ResponseEntity.ok(debt);
     }
 
     @PutMapping("/{id}/status")

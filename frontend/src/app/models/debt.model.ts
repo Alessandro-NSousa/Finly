@@ -49,6 +49,13 @@ export interface DebtRequest {
   totalInstallments?: number;
 }
 
+export interface DebtUpdateRequest {
+  name: string;
+  category: DebtCategory;
+  amount: number;
+  status: DebtStatus;
+}
+
 export interface MonthlyReport {
   month: number;
   year: number;
