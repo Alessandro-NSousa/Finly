@@ -14,6 +14,7 @@ import { DashboardComponent } from './components/dashboard/dashboard.component';
 import { DebtsComponent } from './components/debts/debts.component';
 import { ForgotPasswordComponent } from './components/forgot-password/forgot-password.component';
 import { ResetPasswordComponent } from './components/reset-password/reset-password.component';
+import { UnavailableComponent } from './components/unavailable/unavailable.component';
 import { AuthService } from './services/auth.service';
 import { ThemeService } from './services/theme.service';
 
@@ -34,7 +35,8 @@ export function initializeAuthSession(authService: AuthService): () => Promise<v
     DashboardComponent,
     DebtsComponent,
     ForgotPasswordComponent,
-    ResetPasswordComponent
+    ResetPasswordComponent,
+    UnavailableComponent
   ],
   imports: [
     BrowserModule,
