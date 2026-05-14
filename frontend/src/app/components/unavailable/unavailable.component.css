@@ -1,0 +1,40 @@
+:host {
+  display: block;
+}
+
+.unavailable-layout {
+  min-height: calc(100vh - 96px);
+  align-items: center;
+}
+
+.unavailable-card {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 280px;
+  text-align: center;
+}
+
+.unavailable-message {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+
+.unavailable-message h1 {
+  font-family: var(--font-heading);
+  font-size: clamp(2rem, 4vw, 3rem);
+  letter-spacing: -0.05em;
+  line-height: 1;
+}
+
+@media (max-width: 640px) {
+  .unavailable-layout {
+    min-height: auto;
+  }
+
+  .unavailable-card {
+    min-height: 220px;
+  }
+}

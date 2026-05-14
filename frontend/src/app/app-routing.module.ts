@@ -7,6 +7,7 @@ import { DashboardComponent } from './components/dashboard/dashboard.component';
 import { DebtsComponent } from './components/debts/debts.component';
 import { ForgotPasswordComponent } from './components/forgot-password/forgot-password.component';
 import { ResetPasswordComponent } from './components/reset-password/reset-password.component';
+import { UnavailableComponent } from './components/unavailable/unavailable.component';
 import { AuthGuard } from './guards/auth.guard';
 
 const routes: Routes = [
@@ -18,7 +19,8 @@ const routes: Routes = [
   { path: 'reset-password', component: ResetPasswordComponent },
   { path: 'dashboard', component: DashboardComponent, canActivate: [AuthGuard] },
   { path: 'debts', component: DebtsComponent, canActivate: [AuthGuard] },
-  { path: '**', redirectTo: '/dashboard' }
+  { path: 'indisponivel', component: UnavailableComponent },
+  { path: '**', component: UnavailableComponent }
 ];
 
 @NgModule({
